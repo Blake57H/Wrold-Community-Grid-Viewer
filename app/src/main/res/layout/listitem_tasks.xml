@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingHorizontal="8dp"
+    android:paddingVertical="8dp"
+    android:clipToPadding="false"
+    >
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:paddingVertical="8dp"
+        android:paddingHorizontal="8dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/white"
+        android:elevation="1dp"
+        >
+
+        <TextView
+            android:id="@+id/item_task_title"
+            android:ellipsize="end"
+            android:maxLines="1"
+            style="@style/TextAppearance.AppCompat.Title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Result Title longlonglonglonglonglonglonglonglong" />
+
+        <TextView
+            android:id="@+id/item_device_name"
+            android:ellipsize="end"
+            android:maxLines="1"
+            style="@style/TextAppearance.AppCompat.Body1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@id/item_status"
+            app:layout_constraintTop_toBottomOf="@id/item_task_title"
+            tools:text="Device Name" />
+
+        <TextView
+            android:id="@+id/item_status"
+            style="@style/TextAppearance.AppCompat.Body1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/item_task_title"
+            tools:text="Completed?" />
+
+        <TextView
+            android:id="@+id/item_sent_time"
+            style="@style/TextAppearance.AppCompat.Body1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/item_device_name"
+            tools:text="Sent Time:  mm/dd/yy hh/mm/ss" />
+
+        <TextView
+            android:id="@+id/item_second_time"
+            style="@style/TextAppearance.AppCompat.Body1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/item_sent_time"
+            tools:text="Return Time/ Time due:  mm/dd/yy hh/mm/ss" />
+
+        <TextView
+            android:id="@+id/item_cpu_elapsed_time"
+            style="@style/TextAppearance.AppCompat.Body1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/item_second_time"
+            tools:text="CPU Time / Elapsed Time (hours):    2.14 / 2.19" />
+
+        <TextView
+            android:id="@+id/item_credit"
+            style="@style/TextAppearance.AppCompat.Body1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/item_cpu_elapsed_time"
+            tools:text="Claimed / Granted BOINC Credit   	62.1 / 62.1" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</FrameLayout>
