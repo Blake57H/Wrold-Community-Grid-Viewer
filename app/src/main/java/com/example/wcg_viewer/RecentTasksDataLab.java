@@ -4,19 +4,8 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
-import android.widget.Toast;
-
-import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.example.wcg_viewer.RecentTaskDatabase.RecentTaskDbHelper;
 import com.example.wcg_viewer.RecentTaskDatabase.RecentTaskDbSchema.*;
-import com.google.android.material.snackbar.Snackbar;
-import com.google.gson.Gson;
-
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;

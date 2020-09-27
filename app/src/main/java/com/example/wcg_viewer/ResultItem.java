@@ -176,3 +176,15 @@ class ResultDataRaw {
     @SerializedName("ResultsStatus")
     ResultData mResultData;
 }
+
+class ErrorResultDataRaw{
+    @SerializedName("errors")
+    List<ErrorItem> mErrorItems;
+
+    static class ErrorItem {
+        @SerializedName("code")
+        int mCode;
+        @SerializedName("message")
+        String mMessage;
+    }
+}

@@ -5,6 +5,6 @@
     <item
         android:id="@+id/update_recent_task"
         android:icon="@drawable/ic_baseline_refresh_24"
-        android:title="Update Recent Task"
+        android:title="@string/toolbar_update_recent_task_title"
         app:showAsAction="ifRoom|withText" />
 </menu>

@@ -3,7 +3,7 @@ package com.example.wcg_viewer;
 import android.net.Uri;
 
 
-public class DataFetcher {
+public class UrlBuilder {
     public String buildResultString(String userName, String verificationCode) {
         return buildResultString(userName, verificationCode, 0);
     }
