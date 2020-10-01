@@ -16,7 +16,8 @@
 
     <string name="toolbar_update_recent_task_title">Update Recent Tasks</string>
 
-    <string name="notify_update_in_progress">Begin Update</string>
+    <string name="notify_update_in_progress">Updating…</string>
+    <string name="notify_update_progress">Updating…(%1$d/%2$d)</string>
     <string name="notify_update_complete">Update Completed</string>
     <string name="notify_username_not_set">Username not set</string>
     <string name="notify_username_not_set_action_title">Set username</string>

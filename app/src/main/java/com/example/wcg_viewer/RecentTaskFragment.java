@@ -1,6 +1,5 @@
 package com.example.wcg_viewer;
 
-import android.app.usage.NetworkStatsManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
@@ -19,8 +18,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.net.ConnectivityManagerCompat;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.ui.NavigationUI;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -128,12 +127,12 @@ public class RecentTaskFragment extends Fragment {
 
     }
 
-    private void updateResults() {
+    private void updateResults(int offset) {
         final String userName, VC;
         //userName = "Tech57";
         //VC = "38c3387252d40e9f21dd50325bf51d15";
         userName = SettingsDataLab.getInstance(getActivity()).getUserName();
-        if (userName.isEmpty()) {
+        if (userName == null || userName.isEmpty()) {
             Snackbar.make(getView(), R.string.notify_username_not_set, Snackbar.LENGTH_LONG)
                     .setAction(R.string.notify_username_not_set_action_title, new View.OnClickListener() {
                         @Override
@@ -145,12 +144,13 @@ public class RecentTaskFragment extends Fragment {
         }
 
         VC = SettingsDataLab.getInstance(getActivity()).getVerificationCode();
-        if (VC.isEmpty()) {
+        if (VC == null || VC.isEmpty()) {
             Snackbar.make(getView(), R.string.notify_verification_code_not_set, Snackbar.LENGTH_LONG)
                     .setAction(R.string.notify_verification_code_not_set_action_title, new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            startActivity(new Intent(getActivity(), SettingsActivity.class));
+                            //startActivity(new Intent(getActivity(), SettingsActivity.class));
+
                         }
                     }).show();
             return;
@@ -191,17 +191,26 @@ public class RecentTaskFragment extends Fragment {
                                     return;
                                 }
 
-                                RecentTasksDataLab.getInstance(getActivity()).updateRecentTasks(mResultDataRaw.mResultData.mResults);
+                                if (mResultDataRaw.mResultData.getOffset() == 0)
+                                    RecentTasksDataLab.getInstance(getActivity()).replaceRecentTasks(mResultDataRaw.mResultData.mResults);
+                                else
+                                    RecentTasksDataLab.getInstance(getActivity()).addRecentTasks(mResultDataRaw.mResultData.mResults);
                                 SettingsDataLab.getInstance(getActivity()).setLastUpdateDate(new Date());
                                 loadResults();
                                 mCallbacks.lastUpdateDateChanged();
-                                if (getView() != null)
+                                int downloaded = mResultDataRaw.mResultData.getOffset() + mResultDataRaw.mResultData.getResultsReturned(), available = mResultDataRaw.mResultData.getResultsAvailable();
+                                if (available > downloaded) {
+                                    if (getView() != null)
+                                        Snackbar.make(getView(), getString(R.string.notify_update_progress, downloaded, available), Snackbar.LENGTH_SHORT).show();
+                                    updateResults(downloaded);
+                                } else if (getView() != null)
                                     Snackbar.make(getView(), R.string.notify_update_complete, Snackbar.LENGTH_SHORT).show();
                             }
                         }, new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Toast.makeText(getActivity(), getString(R.string.notify_volley_response_error, error.getLocalizedMessage()), Toast.LENGTH_SHORT).show();
+
+                        Toast.makeText(getActivity(), getString(R.string.notify_volley_response_error, error.networkResponse.statusCode + error.getLocalizedMessage()), Toast.LENGTH_SHORT).show();
                         Log.e(TAG, "updateResults().onErrorResponse: " + error.getMessage());
                         String url = new UrlBuilder().buildResultString(userName, VC);
                         Intent openWebPage = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
@@ -210,6 +219,10 @@ public class RecentTaskFragment extends Fragment {
                 });
 
         SingletonVolley.get(getActivity()).addRequest(request);
+    }
+
+    private void updateResults() {
+        updateResults(0);
     }
 
     private class RecentTaskHolder extends RecyclerView.ViewHolder implements View.OnClickListener {

@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+
 import com.example.wcg_viewer.RecentTaskDatabase.RecentTaskDbHelper;
 import com.example.wcg_viewer.RecentTaskDatabase.RecentTaskDbSchema.*;
 
@@ -15,6 +16,7 @@ public class RecentTasksDataLab {
     private static final String TAG = "RecentTasksDataLab";
     private Context mContext;
     private SQLiteDatabase mDatabase;
+    private int TasksAvailable;
 
     private RecentTasksDataLab(Context context) {
         mContext = context.getApplicationContext();
@@ -48,9 +50,13 @@ public class RecentTasksDataLab {
         return items;
     }
 
-    /* replace the old data set with the newly downloaded data*/
-    public void updateRecentTasks(List<ResultItem> items) {
+    public void clearRecentTasks() {
         mDatabase.delete(RecentTaskTable.NAME, null, null);
+    }
+
+    /* replace the old data set with the newly downloaded data*/
+    public void replaceRecentTasks(List<ResultItem> items) {
+        clearRecentTasks();
         addRecentTasks(items);
     }
 

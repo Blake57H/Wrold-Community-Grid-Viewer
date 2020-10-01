@@ -170,6 +170,18 @@ class ResultData {
     private String mOffset;
     @SerializedName("Results")
     List<ResultItem> mResults;
+
+    public int getResultsAvailable() {
+        return Integer.parseInt(mResultsAvailable);
+    }
+
+    public int getResultsReturned() {
+        return Integer.parseInt(mResultsReturned);
+    }
+
+    public int getOffset() {
+        return Integer.parseInt(mOffset);
+    }
 }
 
 class ResultDataRaw {
