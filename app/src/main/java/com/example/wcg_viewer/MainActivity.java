@@ -7,6 +7,10 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+import androidx.navigation.ui.AppBarConfiguration;
+import androidx.navigation.ui.NavigationUI;
 import androidx.preference.PreferenceManager;
 
 import android.content.Intent;
@@ -31,6 +35,8 @@ public class MainActivity extends AppCompatActivity
     private Fragment mOverviewFragment, mResultTaskFragment;
     private TextView mLastUpdateTextView;
     private String toolbarTitle;
+    private AppBarConfiguration mAppBarConfiguration;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,21 +50,28 @@ public class MainActivity extends AppCompatActivity
         mDrawerLayout = findViewById(R.id.drawer_layout);
 
         NavigationView navigationView = findViewById(R.id.navigation_view);
-        navigationView.setNavigationItemSelectedListener(this);
-        navigationView.setCheckedItem(R.id.navigation_item_overview);
-        toolbarTitleSetter(navigationView.getCheckedItem());
+        mAppBarConfiguration = new AppBarConfiguration.Builder(R.id.navigation_item_overview, R.id.navigation_item_tasks, R.id.navigation_item_news)
+                .setDrawerLayout(mDrawerLayout).build();
+        NavController navController = Navigation.findNavController(this, R.id.fragment_container);
+        NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
+        NavigationUI.setupWithNavController(navigationView, navController);
+
+
+//        navigationView.setNavigationItemSelectedListener(this);
+//        navigationView.setCheckedItem(R.id.navigation_item_overview);
+//        toolbarTitleSetter(navigationView.getCheckedItem());
         mLastUpdateTextView = navigationView.getHeaderView(0).findViewById(R.id.nav_header_last_update_time_textView);
 
         setLastUpdateTextView();
 
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, mDrawerLayout, mToolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        mDrawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
+//        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, mDrawerLayout, mToolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+//        mDrawerLayout.addDrawerListener(toggle);
+//        toggle.syncState();
 
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, OverviewFragment.newInstance()).commit();
-            navigationView.setCheckedItem(R.id.navigation_item_overview);
-        }
+//        if (savedInstanceState == null) {
+//            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, OverviewFragment.newInstance()).commit();
+//            navigationView.setCheckedItem(R.id.navigation_item_overview);
+//        }
     }
 
     @Override
@@ -73,27 +86,29 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.navigation_item_overview:
-                if (mOverviewFragment == null) mOverviewFragment = OverviewFragment.newInstance();
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, OverviewFragment.newInstance()).commit();
-                break;
-            case R.id.navigation_item_tasks:
-                if (mResultTaskFragment == null)
-                    mResultTaskFragment = RecentTaskFragment.newInstance();
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, RecentTaskFragment.newInstance()).commit();
-                break;
-            case R.id.navigation_item_settings:
-                startActivity(new Intent(this, SettingsActivity.class));
-                break;
-            default:
-                Log.e(TAG, "onNavigationItemSelected: id error = " + item.getItemId());
-                Toast.makeText(this, "onNavigationItemSelected: id error = " + item.getItemId(), Toast.LENGTH_SHORT).show();
-                return false;
-        }
-        toolbarTitleSetter(item);
-        mDrawerLayout.closeDrawer(GravityCompat.START);
-        return true;
+        //        switch (item.getItemId()) {
+//            case R.id.navigation_item_overview:
+//                if (mOverviewFragment == null) mOverviewFragment = OverviewFragment.newInstance();
+//                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, OverviewFragment.newInstance()).commit();
+//                break;
+//            case R.id.navigation_item_tasks:
+//                if (mResultTaskFragment == null)
+//                    mResultTaskFragment = RecentTaskFragment.newInstance();
+//                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, RecentTaskFragment.newInstance()).commit();
+//                break;
+//            case R.id.navigation_item_settings:
+//                startActivity(new Intent(this, SettingsActivity.class));
+//                break;
+//            default:
+//                Log.e(TAG, "onNavigationItemSelected: id error = " + item.getItemId());
+//                Toast.makeText(this, "onNavigationItemSelected: id error = " + item.getItemId(), Toast.LENGTH_SHORT).show();
+//                return false;
+//        }
+//        toolbarTitleSetter(item);
+//        mDrawerLayout.closeDrawer(GravityCompat.START);
+//        return true;
+
+        return false;
     }
 
     @Override
@@ -101,7 +116,11 @@ public class MainActivity extends AppCompatActivity
         super.onSaveInstanceState(outState);
     }
 
-
+    @Override
+    public boolean onSupportNavigateUp() {
+        NavController navController = Navigation.findNavController(this, R.id.fragment_container);
+        return NavigationUI.navigateUp(navController, mAppBarConfiguration) || super.onSupportNavigateUp();
+    }
 
     private void toolbarTitleSetter(MenuItem item) {
         if (item == null) {
