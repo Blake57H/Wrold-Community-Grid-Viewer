@@ -1,21 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-        <group android:checkableBehavior="single"
-            android:id="@+id/drawer_item_single">
-            <item
-                android:id="@+id/navigation_item_overview"
-                android:icon="@drawable/ic_menu_assessment_24"
-                android:title="@string/menu_home" />
-            <item
-                android:id="@+id/navigation_item_tasks"
-                android:icon="@drawable/ic_menu_assignment_24"
-                android:title="@string/menu_tasks" />
-        </group>
-        <group android:checkableBehavior="none"
-            android:id="@+id/drawer_item_none">
-            <item
-                android:id="@+id/navigation_item_settings"
-                android:icon="@drawable/ic_baseline_settings_24"
-                android:title="@string/menu_settings" />
-        </group>
+    <group
+        android:id="@+id/drawer_item_single"
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/navigation_item_overview"
+            android:icon="@drawable/ic_menu_assessment_24"
+            android:title="@string/menu_home" />
+        <item
+            android:id="@+id/navigation_item_tasks"
+            android:icon="@drawable/ic_menu_assignment_24"
+            android:title="@string/menu_tasks" />
+        <item
+            android:id="@+id/navigation_item_news"
+            android:icon="@drawable/ic_baseline_mail_24"
+            android:title="@string/menu_news" />
+    </group>
+    <group
+        android:id="@+id/drawer_item_none"
+        android:checkableBehavior="none">
+        <item
+            android:id="@+id/navigation_item_settings"
+            android:icon="@drawable/ic_baseline_settings_24"
+            android:title="@string/menu_settings" />
+    </group>
 </menu>

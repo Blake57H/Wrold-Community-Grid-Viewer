@@ -85,7 +85,7 @@ public class RecentTaskFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.menu_recent_task, menu);
+        inflater.inflate(R.menu.menu_recent_task_fragment_toolbar, menu);
     }
 
     @Override
@@ -156,6 +156,11 @@ public class RecentTaskFragment extends Fragment {
             return;
         }
 
+        if (getView() != null)
+            Snackbar.make(getView(), getString(R.string.notify_update_in_progress), Snackbar.LENGTH_SHORT).show();
+        else{
+            Toast.makeText(getActivity(), R.string.notify_update_in_progress, Toast.LENGTH_SHORT).show();
+        }
         ConnectivityManager manager = (ConnectivityManager) getActivity().getSystemService(CONNECTIVITY_SERVICE);
         NetworkInfo info = manager.getActiveNetworkInfo();
         Log.d(TAG, "updateResults: info is null = " + (info == null ? "true" : "false"));
@@ -205,6 +210,9 @@ public class RecentTaskFragment extends Fragment {
                                     updateResults(downloaded);
                                 } else if (getView() != null)
                                     Snackbar.make(getView(), R.string.notify_update_complete, Snackbar.LENGTH_SHORT).show();
+                                else{
+                                    Toast.makeText(getActivity(), R.string.notify_update_complete, Toast.LENGTH_SHORT).show();
+                                }
                             }
                         }, new Response.ErrorListener() {
                     @Override

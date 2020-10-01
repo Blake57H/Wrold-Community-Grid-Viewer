@@ -1,5 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto" android:id="@+id/navigation">
+    xmlns:app="http://schemas.android.com/apk/res-auto" android:id="@+id/navigation"
+    app:startDestination="@id/navigation_item_overview">
 
+    <fragment
+        android:id="@id/navigation_item_overview"
+        android:name="com.example.wcg_viewer.OverviewFragment"
+        android:label="@string/menu_home" >
+        <action
+            android:id="@+id/action_navigation_item_overview_to_settingsFragment2"
+            app:destination="@id/navigation_item_settings" />
+    </fragment>
+    <fragment
+        android:id="@id/navigation_item_tasks"
+        android:name="com.example.wcg_viewer.RecentTaskFragment"
+        android:label="@string/menu_tasks" >
+        <action
+            android:id="@+id/action_navigation_item_tasks_to_settingsFragment2"
+            app:destination="@id/navigation_item_settings" />
+    </fragment>
+    <fragment
+        android:id="@id/navigation_item_news"
+        android:name="com.example.wcg_viewer.NewsFragment"
+        android:label="@string/menu_news" >
+        <action
+            android:id="@+id/action_navigation_item_news_to_settingsFragment2"
+            app:destination="@id/navigation_item_settings" />
+    </fragment>
+    <fragment
+        android:id="@id/navigation_item_settings"
+        android:name="com.example.wcg_viewer.SettingsFragment"
+        android:label="SettingsFragment" />
 </navigation>
