@@ -30,5 +30,5 @@
     <fragment
         android:id="@id/navigation_item_settings"
         android:name="com.example.wcg_viewer.SettingsFragment"
-        android:label="SettingsFragment" />
+        android:label="@string/menu_settings" />
 </navigation>

@@ -9,10 +9,16 @@ public class UrlBuilder {
     }
 
     public String buildResultString(String userName, String verificationCode, int offset) {
+        return buildResultString(userName, verificationCode, offset, 250);
+    }
+
+    public String buildResultString(String userName, String verificationCode, int offset, int limit) {
         return Uri.parse("https://www.worldcommunitygrid.org/api/members/"+userName+"/results?")
                 .buildUpon()
                 .appendQueryParameter("code", verificationCode)
                 .appendQueryParameter("offset", offset+"")
+                .appendQueryParameter("limit", limit+"")
                 .build().toString();
     }
+
 }

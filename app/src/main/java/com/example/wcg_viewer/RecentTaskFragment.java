@@ -19,6 +19,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 import androidx.navigation.ui.NavigationUI;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -137,7 +138,8 @@ public class RecentTaskFragment extends Fragment {
                     .setAction(R.string.notify_username_not_set_action_title, new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            startActivity(new Intent(getActivity(), SettingsActivity.class));
+                            //startActivity(new Intent(getActivity(), SettingsActivity.class));
+                            Navigation.findNavController(getView()).navigate(R.id.navigation_item_settings);
                         }
                     }).show();
             return;
@@ -150,29 +152,35 @@ public class RecentTaskFragment extends Fragment {
                         @Override
                         public void onClick(View view) {
                             //startActivity(new Intent(getActivity(), SettingsActivity.class));
-
+                            Navigation.findNavController(getView()).navigate(R.id.navigation_item_settings);
                         }
                     }).show();
             return;
         }
 
-        if (getView() != null)
-            Snackbar.make(getView(), getString(R.string.notify_update_in_progress), Snackbar.LENGTH_SHORT).show();
-        else{
-            Toast.makeText(getActivity(), R.string.notify_update_in_progress, Toast.LENGTH_SHORT).show();
-        }
-        ConnectivityManager manager = (ConnectivityManager) getActivity().getSystemService(CONNECTIVITY_SERVICE);
-        NetworkInfo info = manager.getActiveNetworkInfo();
-        Log.d(TAG, "updateResults: info is null = " + (info == null ? "true" : "false"));
-        if (info != null)
-            Log.d(TAG, "updateResults: info isConnected = " + (info.isConnected() ? "true" : "false"));
-        if (info != null && !info.isConnected()) {
-            Snackbar.make(getView(), R.string.notify_network_unavailable, Snackbar.LENGTH_SHORT).show();
-            return;
-        }
+        if (offset == 0)
+            if (getView() != null)
+                Snackbar.make(getView(), getString(R.string.notify_update_in_progress), Snackbar.LENGTH_SHORT).show();
+            else {
+                Toast.makeText(getActivity(), R.string.notify_update_in_progress, Toast.LENGTH_SHORT).show();
+            }
 
+        if (getActivity() != null) {
+            ConnectivityManager manager = (ConnectivityManager) getActivity().getSystemService(CONNECTIVITY_SERVICE);
+            NetworkInfo info = manager.getActiveNetworkInfo();
+            Log.d(TAG, "updateResults: info is null = " + (info == null ? "true" : "false"));
+            if (info != null)
+                Log.d(TAG, "updateResults: info isConnected = " + (info.isConnected() ? "true" : "false"));
+            if (info == null || !info.isConnected()) {
+                if (getView() != null)
+                    Snackbar.make(getView(), R.string.notify_network_unavailable, Snackbar.LENGTH_SHORT).show();
+                else
+                    Toast.makeText(getActivity(), R.string.notify_network_unavailable, Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
         JsonObjectRequest request =
-                new JsonObjectRequest(Request.Method.GET, new UrlBuilder().buildResultString(userName, VC), null,
+                new JsonObjectRequest(Request.Method.GET, new UrlBuilder().buildResultString(userName, VC, offset), null,
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {
@@ -204,21 +212,26 @@ public class RecentTaskFragment extends Fragment {
                                 loadResults();
                                 mCallbacks.lastUpdateDateChanged();
                                 int downloaded = mResultDataRaw.mResultData.getOffset() + mResultDataRaw.mResultData.getResultsReturned(), available = mResultDataRaw.mResultData.getResultsAvailable();
+                                Log.d(TAG, "downloaded=" + downloaded + ", available=" + available);
                                 if (available > downloaded) {
-                                    if (getView() != null)
+                                    if (getView() != null) {
                                         Snackbar.make(getView(), getString(R.string.notify_update_progress, downloaded, available), Snackbar.LENGTH_SHORT).show();
+                                    }
+                                    Log.d(TAG, "onResponse: " + getString(R.string.notify_update_progress, downloaded, available));
                                     updateResults(downloaded);
                                 } else if (getView() != null)
                                     Snackbar.make(getView(), R.string.notify_update_complete, Snackbar.LENGTH_SHORT).show();
-                                else{
+                                else {
                                     Toast.makeText(getActivity(), R.string.notify_update_complete, Toast.LENGTH_SHORT).show();
                                 }
                             }
                         }, new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-
-                        Toast.makeText(getActivity(), getString(R.string.notify_volley_response_error, error.networkResponse.statusCode + error.getLocalizedMessage()), Toast.LENGTH_SHORT).show();
+                        if (error.networkResponse == null)
+                            Toast.makeText(getActivity(), getString(R.string.notify_volley_response_error, error.getLocalizedMessage()), Toast.LENGTH_SHORT).show();
+                        else
+                            Toast.makeText(getActivity(), getString(R.string.notify_volley_response_error, error.networkResponse.statusCode + error.getLocalizedMessage()), Toast.LENGTH_SHORT).show();
                         Log.e(TAG, "updateResults().onErrorResponse: " + error.getMessage());
                         String url = new UrlBuilder().buildResultString(userName, VC);
                         Intent openWebPage = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
