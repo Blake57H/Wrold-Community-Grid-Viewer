@@ -1,5 +1,7 @@
 package com.example.wcg_viewer;
 
+import androidx.annotation.NonNull;
+
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -79,7 +81,7 @@ class NewsRssFeed {
         return mNewsItems;
     }
 
-    public void setNewsItems(List<NewsItem> newsItems) {
+    public void setNewsItems(@NonNull List<NewsItem> newsItems) {
         mNewsItems = newsItems;
     }
 }

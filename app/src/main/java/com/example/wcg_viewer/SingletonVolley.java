@@ -34,11 +34,4 @@ public class SingletonVolley {
         getQueue().add(request);
     }
 
-    public void startQueue(){
-        mQueue.start();
-    }
-
-    public void stopQueue(){
-        mQueue.stop();
-    }
 }
