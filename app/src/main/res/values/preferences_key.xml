@@ -3,4 +3,6 @@
     <string name="preferences_key_username">username</string>
     <string name="preferences_key_verification_code">verification_code</string>
     <string name="preferences_key_last_updated">last_updated</string>
+
+    <string name="preferences_key_news_pubdate">news_pubdate</string>
 </resources>

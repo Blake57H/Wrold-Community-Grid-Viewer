@@ -1,17 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    card_view:cardUseCompatPadding="true"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_margin="8dp">
-    <androidx.cardview.widget.CardView
+    android:layout_marginHorizontal="8dp"
+    android:layout_marginVertical="4dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?android:attr/selectableItemBackground"
+    android:background="@drawable/news_background"
+    android:stateListAnimator="@animator/news_selection">
+
+
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:paddingHorizontal="8dp">
+
         <TextView
+            android:id="@+id/item_news_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingHorizontal="8dp"
-            tools:text="text"/>
-    </androidx.cardview.widget.CardView>
+            android:layout_alignParentTop="true"
+            style="@style/TextAppearance.AppCompat.Title"
+            tools:text="example - October Update: Africa Rainfall Project" />
 
-</FrameLayout>
+        <TextView
+            android:id="@+id/item_news_pub_date"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/item_news_title"
+            android:textColor="@color/colorGray"
+            android:textSize="12sp"
+            tools:text="Tue, 06 Oct 2020 19:17:01 UTC (covert to local timezone!)" />
+
+        <TextView
+            android:id="@+id/item_news_description"
+            android:textSize="16sp"
+            android:textColor="@color/colorDarkGray"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/item_news_pub_date"
+            tools:text="example - The research team is creating rainfall models based on data received from World Community Grid." />
+
+        <Button
+            android:layout_marginVertical="4dp"
+            android:id="@+id/item_news_open_link_button"
+            android:textSize="14sp"
+            android:textColor="@color/colorPrimary"
+            android:layout_alignParentEnd="true"
+            android:layout_below="@id/item_news_description"
+            android:background="@android:color/transparent"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:text="@string/button_news_open_link"/>
+    </RelativeLayout>
+
+</androidx.cardview.widget.CardView>

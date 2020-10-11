@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">wcg_viewer</string>
+    <string name="app_name">WCG Viewer</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
@@ -8,14 +8,13 @@
     <string name="nav_header_subtitle_never">Never</string>
     <string name="nav_header_desc">Navigation header</string>
 
-    <string name="action_settings">Settings</string>
-
     <string name="menu_home">Home</string>
     <string name="menu_tasks">Result Status</string>
     <string name="menu_settings">Settings</string>
     <string name="menu_news">News</string>
 
     <string name="toolbar_update_recent_task_title">Update Recent Tasks</string>
+    <string name="toolbar_update_news_title">Get Latest News</string>
 
     <string name="notify_update_in_progress">Updating…</string>
     <string name="notify_update_progress">Updating…(%1$d/%2$d)</string>
@@ -28,7 +27,10 @@
     <string name="notify_update_recent_task_received_error_code">Can\'t update recent task: %s</string>
     <string name="notify_update_recent_task_received_unknown">Can\'t update recent task. Visit website for more information.</string>
     <string name="notify_volley_response_error">Update returned an error: %s\nVisit website for more information</string>
+    <string name="notify_update_news_error">Unable to parse news data</string>
+    <string name="notify_update_news_already_latest">News is already the latest</string>
 
+    <string name="button_news_open_link">More…</string>
 
     <string name="item_cpu_elapsed_time_string">CPU Time / Elapsed Time (hours):    %1$s / %2$s</string>
     <string name="item_credit_string">Claimed / Granted BOINC Credit:   %1$s / %2$s</string>

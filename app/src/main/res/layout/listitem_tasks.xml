@@ -4,37 +4,35 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingHorizontal="8dp"
-    android:paddingVertical="8dp"
     android:clipToPadding="false"
-    >
+    android:paddingHorizontal="8dp"
+    android:paddingVertical="8dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:paddingVertical="8dp"
-        android:paddingHorizontal="8dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@android:color/white"
         android:elevation="1dp"
-        >
+        android:paddingHorizontal="8dp"
+        android:paddingVertical="8dp">
 
         <TextView
             android:id="@+id/item_task_title"
-            android:ellipsize="end"
-            android:maxLines="1"
             style="@style/TextAppearance.AppCompat.Title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="Result Title longlonglonglonglonglonglonglonglong" />
 
         <TextView
             android:id="@+id/item_device_name"
-            android:ellipsize="end"
-            android:maxLines="1"
             style="@style/TextAppearance.AppCompat.Body1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toLeftOf="@id/item_status"
             app:layout_constraintTop_toBottomOf="@id/item_task_title"

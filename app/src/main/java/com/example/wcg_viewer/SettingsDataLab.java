@@ -21,11 +21,11 @@ public class SettingsDataLab {
     private static SettingsDataLab sLab;
     private static final String SETTINGS_FILENAME = "settings.json";
     private Context mApplicationContext;
-    private SettingsItem mSettingsItem;
+    //private SettingsItem mSettingsItem;
 
     private SettingsDataLab(Context context) {
         mApplicationContext = context.getApplicationContext();
-        mSettingsItem = readSettingsFromJson();
+        //mSettingsItem = readSettingsFromJson();
     }
 
     public static SettingsDataLab getInstance(Context context) {
@@ -38,29 +38,29 @@ public class SettingsDataLab {
         return PreferenceManager.getDefaultSharedPreferences(mApplicationContext).getString(mApplicationContext.getString(R.string.preferences_key_username), null);
     }
 
-    @Deprecated
-    public void setUserName(String userName) {
-        mSettingsItem.setUserName(userName);
-        if (!saveSettingsToJson(mSettingsItem)) {
-            Toast.makeText(mApplicationContext, "unable to save username", Toast.LENGTH_LONG).show();
-        }
-    }
+//    @Deprecated
+//    public void setUserName(String userName) {
+//        mSettingsItem.setUserName(userName);
+//        if (!saveSettingsToJson(mSettingsItem)) {
+//            Toast.makeText(mApplicationContext, "unable to save username", Toast.LENGTH_LONG).show();
+//        }
+//    }
 
     public String getVerificationCode() {
         return PreferenceManager.getDefaultSharedPreferences(mApplicationContext).getString(mApplicationContext.getString(R.string.preferences_key_verification_code), null);
     }
 
-    @Deprecated
-    public void setVerificationCode(String code) {
-        mSettingsItem.setVerificationCode(code);
-        if (!saveSettingsToJson(mSettingsItem)) {
-            Toast.makeText(mApplicationContext, "unable to save verification code", Toast.LENGTH_LONG).show();
-        }
-    }
+//    @Deprecated
+//    public void setVerificationCode(String code) {
+//        mSettingsItem.setVerificationCode(code);
+//        if (!saveSettingsToJson(mSettingsItem)) {
+//            Toast.makeText(mApplicationContext, "unable to save verification code", Toast.LENGTH_LONG).show();
+//        }
+//    }
 
-    public Date getLastUpdateDate() {
-        return mSettingsItem.getLastUpdateDate();
-    }
+//    public Date getLastUpdateDate() {
+//        return mSettingsItem.getLastUpdateDate();
+//    }
 
     public void setLastUpdateDate(Date date) {
         DateFormat df = DateFormat.getDateTimeInstance();
@@ -77,6 +77,7 @@ public class SettingsDataLab {
                 .apply();
     }
 
+/*
     private boolean saveSettingsToJson(SettingsItem item) {
         boolean returnValue = true;
         FileOutputStream outputStream = null;
@@ -102,7 +103,9 @@ public class SettingsDataLab {
         }
         return returnValue;
     }
+*/
 
+/*
     private SettingsItem readSettingsFromJson() {
         FileInputStream inputStream = null;
         Gson gson = new Gson();
@@ -133,8 +136,10 @@ public class SettingsDataLab {
 
         return item;
     }
+*/
 
 
+/*
     private static class SettingsItem {
         private String mUserName;
         private String mVerificationCode;
@@ -168,6 +173,7 @@ public class SettingsDataLab {
             mLastUpdateDate = lastUpdateDate;
         }
     }
+*/
 
 }
 

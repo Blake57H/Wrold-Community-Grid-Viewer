@@ -6,6 +6,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -13,6 +14,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,6 +23,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.NavigationUI;
+import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -75,10 +79,21 @@ public class RecentTaskFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_tasks, container, false);
 
         mRecyclerView = v.findViewById(R.id.tasks_recyclerView);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-
+        mRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 1));
+        mRecyclerView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                DisplayMetrics dm = new DisplayMetrics();
+                getActivity().getWindowManager().getDefaultDisplay().getMetrics(dm);
+                float widthDP = dm.widthPixels / dm.density;
+                int row = Math.round(widthDP / 350);
+                if (row == 0) row = 1;
+                ((GridLayoutManager) mRecyclerView.getLayoutManager()).setSpanCount(row);
+                Log.d(TAG, "Span Count: " + row);
+                mRecyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+            }
+        });
         loadResults();
-
         return v;
     }
 
@@ -91,12 +106,10 @@ public class RecentTaskFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.update_recent_task:
-                updateResults();
-                break;
-            default:
-                return super.onOptionsItemSelected(item);
+        if (item.getItemId() == R.id.update_recent_task) {
+            updateResults();
+        } else {
+            return super.onOptionsItemSelected(item);
         }
 
         return true;
@@ -132,13 +145,12 @@ public class RecentTaskFragment extends Fragment {
         final String userName, VC;
         //userName = "Tech57";
         //VC = "38c3387252d40e9f21dd50325bf51d15";
-        userName = SettingsDataLab.getInstance(getActivity()).getUserName();
+        userName = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(getString(R.string.preferences_key_username), null);
         if (userName == null || userName.isEmpty()) {
             Snackbar.make(getView(), R.string.notify_username_not_set, Snackbar.LENGTH_LONG)
                     .setAction(R.string.notify_username_not_set_action_title, new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            //startActivity(new Intent(getActivity(), SettingsActivity.class));
                             Navigation.findNavController(getView()).navigate(R.id.navigation_item_settings);
                         }
                     }).show();
@@ -151,7 +163,6 @@ public class RecentTaskFragment extends Fragment {
                     .setAction(R.string.notify_verification_code_not_set_action_title, new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            //startActivity(new Intent(getActivity(), SettingsActivity.class));
                             Navigation.findNavController(getView()).navigate(R.id.navigation_item_settings);
                         }
                     }).show();
@@ -208,7 +219,12 @@ public class RecentTaskFragment extends Fragment {
                                     RecentTasksDataLab.getInstance(getActivity()).replaceRecentTasks(mResultDataRaw.mResultData.mResults);
                                 else
                                     RecentTasksDataLab.getInstance(getActivity()).addRecentTasks(mResultDataRaw.mResultData.mResults);
-                                SettingsDataLab.getInstance(getActivity()).setLastUpdateDate(new Date());
+                                DateFormat df = DateFormat.getDateTimeInstance();
+                                PreferenceManager
+                                        .getDefaultSharedPreferences(getActivity())
+                                        .edit()
+                                        .putString(getString(R.string.preferences_key_last_updated), df.format(new Date()))
+                                        .apply();
                                 loadResults();
                                 mCallbacks.lastUpdateDateChanged();
                                 int downloaded = mResultDataRaw.mResultData.getOffset() + mResultDataRaw.mResultData.getResultsReturned(), available = mResultDataRaw.mResultData.getResultsAvailable();
@@ -224,6 +240,7 @@ public class RecentTaskFragment extends Fragment {
                                 else {
                                     Toast.makeText(getActivity(), R.string.notify_update_complete, Toast.LENGTH_SHORT).show();
                                 }
+                                loadResults();
                             }
                         }, new Response.ErrorListener() {
                     @Override
