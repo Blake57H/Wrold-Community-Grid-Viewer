@@ -22,15 +22,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.snackbar.Snackbar;
 
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-
-import java.io.IOException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 public class NewsFragment extends Fragment {
 
@@ -116,73 +109,6 @@ public class NewsFragment extends Fragment {
             mAdapter.notifyDataSetChanged();
         }
         DebugNewsData(items);
-    }
-
-    private NewsItem parseXMLReadItem(XmlPullParser parser) throws IOException, XmlPullParserException, ParseException {
-        Log.d(TAG, "actualXMLParser: read an item");
-        String name;
-        NewsItem newsItem = new NewsItem();
-        while (parser.next() != XmlPullParser.END_TAG) {
-            if (parser.getEventType() != XmlPullParser.START_TAG) continue;
-            name = parser.getName();
-            switch (name) {
-                case "title":
-                    newsItem.setTitle(getXMLText(parser));
-                    Log.d(TAG, "actualXMLParser: read item title: " + newsItem.getTitle());
-                    break;
-                case "link":
-                    newsItem.setLink(getXMLText(parser));
-                    Log.d(TAG, "actualXMLParser: read item link: " + newsItem.getLink());
-                    break;
-                case "description":
-                    newsItem.setDescription(getXMLText(parser));
-                    Log.d(TAG, "actualXMLParser: read item desc: " + newsItem.getDescription());
-                    break;
-                case "pubDate":
-                    newsItem.setPubDate(XMLStringPubDateConverter(getXMLText(parser)));
-                    break;
-                case "guid ":
-                    newsItem.setGuid(getXMLText(parser));
-                    break;
-                default:
-                    skipXMLPart(parser);
-                    break;
-            }
-        }
-        Log.d(TAG, "parseXMLReadItem: an item is returning");
-        return newsItem;
-    }
-
-    private String getXMLText(XmlPullParser parser) throws IOException, XmlPullParserException {
-        String text = null;
-
-        if (parser.next() == XmlPullParser.TEXT) {
-            text = parser.getText();
-            parser.next();
-        }
-        return text;
-    }
-
-    private void skipXMLPart(XmlPullParser parser) throws XmlPullParserException, IOException {
-        if (parser.getEventType() != XmlPullParser.START_TAG) {
-            throw new IllegalStateException();
-        }
-        int depth = 1;
-        while (depth != 0) {
-            switch (parser.next()) {
-                case XmlPullParser.END_TAG:
-                    depth--;
-                    break;
-                case XmlPullParser.START_TAG:
-                    depth++;
-                    break;
-            }
-        }
-    }
-
-    private Date XMLStringPubDateConverter(String date) throws ParseException {
-        SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z", Locale.getDefault());
-        return sdf.parse(date);
     }
 
     private void DebugNewsData(List<NewsItem> items) {

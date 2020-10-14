@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">WCG Viewer</string>
 
+    <string name="unclassified_text_member_statistic">member statistic</string>
+
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="nav_header_title">World Community Grid Viewer</string>
@@ -15,10 +17,12 @@
 
     <string name="toolbar_update_recent_task_title">Update Recent Tasks</string>
     <string name="toolbar_update_news_title">Get Latest News</string>
+    <string name="toolbar_update_all_title">Refresh</string>
 
     <string name="notify_update_in_progress">Updating…</string>
     <string name="notify_update_progress">Updating…(%1$d/%2$d)</string>
     <string name="notify_update_complete">Update Completed</string>
+    <string name="notify_update_complete_with_text">Update %s completed</string>
     <string name="notify_username_not_set">Username not set</string>
     <string name="notify_username_not_set_action_title">Set username</string>
     <string name="notify_verification_code_not_set">Verification code not set</string>
@@ -27,10 +31,13 @@
     <string name="notify_update_recent_task_received_error_code">Can\'t update recent task: %s</string>
     <string name="notify_update_recent_task_received_unknown">Can\'t update recent task. Visit website for more information.</string>
     <string name="notify_volley_response_error">Update returned an error: %s\nVisit website for more information</string>
+    <string name="notify_update_error_with_message">Unable to update %1$s: %2$s</string>
     <string name="notify_update_news_error">Unable to parse news data</string>
     <string name="notify_update_news_already_latest">News is already the latest</string>
+    <string name="notify_parse_member_statistic_error">Unable to parse member statistic</string>
+    <string name="notify_unknown_load_error_to_visit_website_with_message">Unable to load %1$s: %2$s\nVisit website for more information.</string>
 
-    <string name="button_news_open_link">More…</string>
+    <string name="button_news_open_link">Read More</string>
 
     <string name="item_cpu_elapsed_time_string">CPU Time / Elapsed Time (hours):    %1$s / %2$s</string>
     <string name="item_credit_string">Claimed / Granted BOINC Credit:   %1$s / %2$s</string>
@@ -55,5 +62,26 @@
     <string name="settings_verification_code_title">Verification Code</string>
     <string name="settings_verification_code_summary_empty">Verification code is not set</string>
     <string name="settings_verification_code_summary_set">Verification code is set</string>
+
+    <string name="overview_news_title">Latest News: %s</string>
+    <string name="overview_member_stat_title">Your Contribution</string>
+    <string name="overview_member_stat_runtime_and_rank_title">Total Run Time (y:d:h:m:s) (Rank):</string>
+    <string name="overview_member_stat_runtime_and_rank_content">%1$d:%2$d:%3$d:%4$d:%5$d (#%6$s)</string>
+    <string name="overview_member_stat_point_generated">Point Generated (Rank): </string>
+    <string name="overview_member_stat_point_generated_result_returned_content">%1$s (#%2$s)</string>
+    <string name="overview_member_stat_result_returned">Result Returned (Rank): </string>
+    <string name="overview_member_stat_last_result_returned">Last Returned Result: </string>
+    <string-array name="overview_member_stat_time_diff_texts">
+        <item>%d second ago</item>
+        <item>%d seconds ago</item>
+        <item>%d minute ago</item>
+        <item>%d minutes ago</item>
+        <item>%d hour ago</item>
+        <item>%d hours ago</item>
+        <item>%d day ago</item>
+        <item>%d days ago</item>
+        <item>%d year ago</item>
+        <item>%d years ago</item>
+    </string-array>
 
 </resources>

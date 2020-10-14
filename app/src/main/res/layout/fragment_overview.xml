@@ -1,8 +1,171 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:layout_margin="8dp">
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/overview_refresh_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:layout_margin="10dp"
+        android:clickable="true"
+        android:elevation="6dp"
+        android:focusable="true"
+        app:srcCompat="@drawable/ic_baseline_refresh_24" />
 
 
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-</ScrollView>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/member_statistic_cardview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardUseCompatPadding="true">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:paddingHorizontal="8dp">
+
+                    <TextView
+                        android:id="@+id/member_stat_title_textview"
+                        style="@style/TextAppearance.AppCompat.Headline"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentTop="true"
+                        android:text="@string/overview_member_stat_title" />
+
+                    <TextView
+                        android:id="@+id/member_stat_total_runtime_and_rank_title_textview"
+                        style="@style/TextAppearance.AppCompat.Body1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/member_stat_title_textview"
+                        android:text="@string/overview_member_stat_runtime_and_rank_title" />
+
+                    <TextView
+                        android:id="@+id/member_stat_total_runtime_and_rank_content_textview"
+                        style="@style/TextAppearance.AppCompat.Body1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/member_stat_total_runtime_and_rank_title_textview"
+                        android:text="@string/overview_member_stat_runtime_and_rank_content"
+                        android:textAlignment="viewEnd" />
+
+                    <TextView
+                        android:id="@+id/overview_member_stat_points_generated_textview"
+                        style="@style/TextAppearance.AppCompat.Body1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/member_stat_total_runtime_and_rank_content_textview"
+                        android:text="@string/overview_member_stat_point_generated" />
+
+                    <TextView
+                        android:id="@+id/overview_member_stat_points_generated_content_textview"
+                        style="@style/TextAppearance.AppCompat.Body1"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/member_stat_total_runtime_and_rank_content_textview"
+                        android:layout_alignParentEnd="true"
+                        android:layout_toEndOf="@id/overview_member_stat_points_generated_textview"
+                        android:text="@string/overview_member_stat_point_generated_result_returned_content"
+                        android:textAlignment="viewEnd" />
+
+                    <TextView
+                        android:id="@+id/overview_member_stat_result_returned_textview"
+                        style="@style/TextAppearance.AppCompat.Body1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/overview_member_stat_points_generated_textview"
+                        android:text="@string/overview_member_stat_result_returned" />
+
+                    <TextView
+                        android:id="@+id/overview_member_stat_resultreturned_content_textview"
+                        style="@style/TextAppearance.AppCompat.Body1"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/overview_member_stat_points_generated_content_textview"
+                        android:layout_alignParentEnd="true"
+                        android:layout_toEndOf="@id/overview_member_stat_result_returned_textview"
+                        android:text="@string/overview_member_stat_point_generated_result_returned_content"
+                        android:textAlignment="viewEnd" />
+
+                    <TextView
+                        android:id="@+id/overview_member_stat_last_returned_result"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/overview_member_stat_result_returned_textview"
+                        android:layout_alignParentStart="true"
+                        style="@style/TextAppearance.AppCompat.Body1"
+                        android:text="@string/overview_member_stat_last_result_returned"/>
+
+                    <TextView
+                        android:id="@+id/overview_member_stat_last_returned_result_content"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        style="@style/TextAppearance.AppCompat.Body1"
+                        android:layout_below="@id/overview_member_stat_result_returned_textview"
+                        android:layout_toEndOf="@id/overview_member_stat_last_returned_result"
+                        android:layout_alignParentEnd="true"
+                        android:textAlignment="viewEnd"
+                        tools:text="5days ago"/>
+
+                </RelativeLayout>
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/overview_news_cardview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardUseCompatPadding="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="8dp">
+
+                    <TextView
+                        android:id="@+id/overview_news_headline_textview"
+                        style="@style/TextAppearance.AppCompat.Headline"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/overview_news_title" />
+
+                    <TextView
+                        android:id="@+id/overview_news_time_textview"
+                        style="@style/TextAppearance.News.Time"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        tools:text="some random day in 2020" />
+
+                    <TextView
+                        android:id="@+id/overview_news_description_textview"
+                        style="@style/TextAppearance.AppCompat.Body1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        tools:text="-example news Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum." />
+
+                    <Button
+                        android:id="@+id/overview_news_open_link_button"
+                        style="@style/NewsButton"
+                        android:text="@string/button_news_open_link" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+
+        </LinearLayout>
+    </ScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

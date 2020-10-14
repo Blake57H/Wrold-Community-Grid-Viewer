@@ -21,4 +21,12 @@ public class UrlBuilder {
                 .build().toString();
     }
 
+    public String buildMemberStatsWithTeamHistoryString(String userName, String verificationCode){
+        return Uri.parse("https://www.worldcommunitygrid.org/verifyMember.do?")
+                .buildUpon()
+                .appendQueryParameter("name", userName)
+                .appendQueryParameter("code", verificationCode)
+                .build().toString();
+    }
+
 }
