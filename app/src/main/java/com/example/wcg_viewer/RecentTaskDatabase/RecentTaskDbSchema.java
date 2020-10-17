@@ -1,7 +1,5 @@
 package com.example.wcg_viewer.RecentTaskDatabase;
 
-import com.google.gson.annotations.SerializedName;
-
 public class RecentTaskDbSchema {
     public static final class RecentTaskTable{
         public static final String NAME = "recentTask";

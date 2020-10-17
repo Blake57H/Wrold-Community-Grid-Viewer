@@ -3,6 +3,7 @@ package com.example.wcg_viewer;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,7 +25,7 @@ import java.util.Date;
 public class OverviewFragment extends Fragment {
     private static final String TAG = "OverviewFragment";
 
-    private DataLab mDataLab;
+    private SourceDataLab mSourceDataLab;
 
     private CardView mLatestNewsCardView;
     private TextView mLatestNewsTitleTextView, mLatestNewsTimeTextView, mLatestNewsDescriptionTextView;
@@ -39,11 +40,11 @@ public class OverviewFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mDataLab = new DataLab(getActivity());
-        mDataLab.setOnNewsFetched(new DataLab.NewsFetched() {
+        mSourceDataLab = new SourceDataLab(getActivity());
+        mSourceDataLab.setOnNewsFetched(new SourceDataLab.NewsFetched() {
             @Override
             public void onNewsFetched(@NonNull NewsRssFeed feed) {
-                setNewsCardViewContent(mDataLab.getLatestNewsItem());
+                setNewsCardViewContent(mSourceDataLab.getLatestNewsItem());
             }
 
             @Override
@@ -66,9 +67,9 @@ public class OverviewFragment extends Fragment {
 
             }
         });
-        mDataLab.setStatisticFetched(new DataLab.StatisticFetched() {
+        mSourceDataLab.setStatisticFetched(new SourceDataLab.StatisticFetched() {
             @Override
-            public void onMemberStatisticFetched(StatisticItems.MemberStatistic statistic) {
+            public void onMemberStatisticFetched(MemberStatistic statistic) {
                 setMemberStatisticCardViewContent(statistic);
             }
 
@@ -104,13 +105,13 @@ public class OverviewFragment extends Fragment {
         mLatestNewsTimeTextView = v.findViewById(R.id.overview_news_time_textview);
         mLatestNewsDescriptionTextView = v.findViewById(R.id.overview_news_description_textview);
         mLatestNewsLinkButton = v.findViewById(R.id.overview_news_open_link_button);
-        setNewsCardViewContent(mDataLab.getLatestNewsItem());
+        setNewsCardViewContent(mSourceDataLab.getLatestNewsItem());
 
         FloatingActionButton floatingActionButton = v.findViewById(R.id.overview_refresh_fab);
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mDataLab.fetchLatestNews();
+                mSourceDataLab.fetchLatestNews();
 
                 String userName = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(getString(R.string.preferences_key_username), null);
                 if (userName == null || userName.isEmpty()) {
@@ -134,7 +135,7 @@ public class OverviewFragment extends Fragment {
                             }).show();
                     return;
                 }
-                mDataLab.fetchLatestStatistic(userName, VC);
+                mSourceDataLab.fetchLatestStatistic(userName, VC);
             }
         });
 
@@ -143,7 +144,7 @@ public class OverviewFragment extends Fragment {
         mStatisticGeneratedPointContentTextView = v.findViewById(R.id.overview_member_stat_points_generated_content_textview);
         mStatisticReturnedResultContentTextView = v.findViewById(R.id.overview_member_stat_resultreturned_content_textview);
         mStatisticLastReturnedResultContentTextView = v.findViewById(R.id.overview_member_stat_last_returned_result_content);
-        setMemberStatisticCardViewContent(mDataLab.getMemberStatistic());
+        setMemberStatisticCardViewContent(mSourceDataLab.getMemberStatistic());
 
         return v;
     }
@@ -169,30 +170,33 @@ public class OverviewFragment extends Fragment {
         }
     }
 
-    private void setMemberStatisticCardViewContent(StatisticItems.MemberStatistic statistic) {
+    private void setMemberStatisticCardViewContent(MemberStatistic statistic) {
+        Log.d(TAG, "setMemberStatisticCardViewContent: setting statistic cardview");
         if (statistic == null) {
+            Log.d(TAG, "setMemberStatisticCardViewContent: hide cardview");
             mStatisticCardView.setVisibility(View.GONE);
         } else {
+            Log.d(TAG, "setMemberStatisticCardViewContent: show cardview");
             if (mStatisticCardView.getVisibility() != View.VISIBLE)
                 mStatisticCardView.setVisibility(View.VISIBLE);
-            long[] runtime = statistic.getTotalRunTime();
-            mStatisticTotalRuntimeContentTextView.setText(getString(R.string.overview_member_stat_runtime_and_rank_content, runtime[0], runtime[1], runtime[2], runtime[3], runtime[4], statistic.getTotalRunTimeRank() + ""));
-            mStatisticGeneratedPointContentTextView.setText(getString(R.string.overview_member_stat_point_generated_result_returned_content, statistic.getGeneratedPoints() + "", statistic.getGeneratedPointsRank() + ""));
-            mStatisticReturnedResultContentTextView.setText(getString(R.string.overview_member_stat_point_generated_result_returned_content, statistic.getReturnedResults() + "", statistic.getReturnedResultRank() + ""));
-            Date dateNow = new Date(), dateLastReturnedResult = statistic.getLastReturnedResult();
+            long[] runtime = statistic.getMemberStats().getTotalRunTime();
+            mStatisticTotalRuntimeContentTextView.setText(getString(R.string.overview_member_stat_runtime_and_rank_content, runtime[0], runtime[1], runtime[2], runtime[3], runtime[4], statistic.getMemberStats().getTotalRunTimeRank() + ""));
+            mStatisticGeneratedPointContentTextView.setText(getString(R.string.overview_member_stat_point_generated_result_returned_content, statistic.getMemberStats().getGeneratedPoints() + "", statistic.getMemberStats().getGeneratedPointsRank() + ""));
+            mStatisticReturnedResultContentTextView.setText(getString(R.string.overview_member_stat_point_generated_result_returned_content, statistic.getMemberStats().getReturnedResults() + "", statistic.getMemberStats().getReturnedResultRank() + ""));
+            Date dateNow = new Date(), dateLastReturnedResult = statistic.getMemberStats().getLastReturnedResult();
             String[] contentTexts = getResources().getStringArray(R.array.overview_member_stat_time_diff_texts);
             int contentTextsSelector = 0; // this int value is used to decide which contentTexts to use (contentTexts[contentTextSelector])
 
             int[] divideValue = new int[]{60, 60, 24, 365}; //60 seconds in minute, 60 minutes in an hour, 24 hours in a day, 365 days in a year
             long time = (dateNow.getTime() - dateLastReturnedResult.getTime()) / 1000; //time is second this moment
             while (contentTextsSelector < 4 && time / divideValue[contentTextsSelector] > 0) {
-                /*What I want to do here is:
+                /*What I want to do here (in this while loop) is:
                 before entering the first loop, {divideValue[contentTextsSelector]} means 60 seconds in a minute, {time} represents time in seconds
                 if time / divideValue[contentTextsSelector] < 0, then {time} would be less than 60
                 which means time diff is less than a minute
                 then the textview would show something like "5 seconds ago".
 
-                in the first loop, {time/divideValue[contentTextsSelector]=time/60}, after which time would be representing time in minutes
+                in the first loop, {time/divideValue[contentTextsSelector]=time/60}, after which time would be representing time in minutes (the second part of the time would be missing but it doesn't matter here)
                 and divideValue[contentTextsSelector] moves to its next value, which is 60 minutes in an hour
                 if {time / divideValue[contentTextsSelector] > 0}, then {time} is greater than 60, meaning the loop will carry on to find out how many days there is
                 if {time / divideValue[contentTextsSelector] < 0}, then {time} is less than 60, meaning Textview can show something like "45 minutes ago"

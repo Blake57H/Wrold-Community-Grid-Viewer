@@ -2,6 +2,8 @@ package com.example.wcg_viewer;
 
 import android.database.Cursor;
 import android.database.CursorWrapper;
+
+import com.example.wcg_viewer.MemberStatsByProjectsDatabase.MemberStatsByProjectDbSchema.*;
 import com.example.wcg_viewer.RecentTaskDatabase.RecentTaskDbSchema.*;
 
 
@@ -11,7 +13,7 @@ public class DbCursorWrapper extends CursorWrapper {
         super(cursor);
     }
 
-    public ResultItem getResultItem(){
+    public ResultItem getResultItem() {
         ResultItem item = new ResultItem();
 
         item.setResultID(getLong(getColumnIndex(RecentTaskTable.Columns.RESULT_ID)));
@@ -29,6 +31,24 @@ public class DbCursorWrapper extends CursorWrapper {
         item.setResultValidateState(getInt(getColumnIndex(RecentTaskTable.Columns.RESULT_VALIDATE_STATE)));
         item.setClaimedCredit(getDouble(getColumnIndex(RecentTaskTable.Columns.CLAIMED_CREDIT)));
         item.setGrantedCredit(getDouble(getColumnIndex(RecentTaskTable.Columns.GRANTED_CREDIT)));
+
+        return item;
+    }
+
+    public String getBadgeUrl() {
+        return getString(getColumnIndex(MemberStatsByProjectTable.Columns.BADGE_URL));
+    }
+
+    public ProjectItem getProjectItem() {
+        ProjectItem item = new ProjectItem();
+
+        item.setProjectShortName(getString(getColumnIndex(MemberStatsByProjectTable.Columns.PROJECT_SHORT_NAME)));
+        item.setProjectName(getString(getColumnIndex(MemberStatsByProjectTable.Columns.PROJECT_NAME)));
+        item.setRunTimeInSecond(getLong(getColumnIndex(MemberStatsByProjectTable.Columns.RUNTIME)));
+        item.setPoints(getLong(getColumnIndex(MemberStatsByProjectTable.Columns.POINTS)));
+        item.setResults(getLong(getColumnIndex(MemberStatsByProjectTable.Columns.RESULTS)));
+        item.setBadgeUrl(getString(getColumnIndex(MemberStatsByProjectTable.Columns.BADGE_URL)));
+        item.setBadgeDescription(getString(getColumnIndex(MemberStatsByProjectTable.Columns.BADGE_DESCRIPTION)));
 
         return item;
     }

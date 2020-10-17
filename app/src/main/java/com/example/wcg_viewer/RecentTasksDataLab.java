@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import com.example.wcg_viewer.RecentTaskDatabase.RecentTaskDbHelper;
 import com.example.wcg_viewer.RecentTaskDatabase.RecentTaskDbSchema.*;
@@ -14,13 +15,12 @@ import java.util.List;
 public class RecentTasksDataLab {
     private static RecentTasksDataLab sRecentTasksDataLab;
     private static final String TAG = "RecentTasksDataLab";
-    private Context mContext;
-    private SQLiteDatabase mDatabase;
-    private int TasksAvailable;
+    private final SQLiteDatabase mDatabase;
 
     private RecentTasksDataLab(Context context) {
-        mContext = context.getApplicationContext();
-        mDatabase = new RecentTaskDbHelper(mContext).getWritableDatabase();
+        Log.d(TAG, "RecentTasksDataLab: new instance");
+        Context context1 = context.getApplicationContext();
+        mDatabase = new RecentTaskDbHelper(context1).getWritableDatabase();
     }
 
     public static RecentTasksDataLab getInstance(Context context) {

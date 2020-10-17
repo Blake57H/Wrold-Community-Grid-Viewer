@@ -29,7 +29,7 @@ public class NewsFragment extends Fragment {
 
     private RecyclerView mRecyclerView;
     private NewsAdapter mAdapter;
-    private DataLab mDataLab;
+    private SourceDataLab mSourceDataLab;
 
     private static final String TAG = "NewsFragment";
 
@@ -38,8 +38,8 @@ public class NewsFragment extends Fragment {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
-        mDataLab = new DataLab(getActivity());
-        mDataLab.setOnNewsFetched(new DataLab.NewsFetched() {
+        mSourceDataLab = new SourceDataLab(getActivity());
+        mSourceDataLab.setOnNewsFetched(new SourceDataLab.NewsFetched() {
             @Override
             public void onNewsFetched(@NonNull NewsRssFeed feed) {
                 loadNews(feed.getNewsItems());
@@ -87,7 +87,7 @@ public class NewsFragment extends Fragment {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.update_news) {
 //            fetchLatestNews(getView());
-            mDataLab.fetchLatestNews();
+            mSourceDataLab.fetchLatestNews();
         } else {
             return super.onOptionsItemSelected(item);
         }
@@ -96,7 +96,7 @@ public class NewsFragment extends Fragment {
 
     private void loadNews(@Nullable List<NewsItem> items) {
         if (items == null) {
-            items = mDataLab.getNewsItems();
+            items = mSourceDataLab.getNewsItems();
         }
 
         if (mAdapter == null) {

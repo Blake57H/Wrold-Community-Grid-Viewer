@@ -1,10 +1,14 @@
 package com.example.wcg_viewer;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.util.Xml;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.preference.PreferenceManager;
@@ -12,11 +16,13 @@ import androidx.preference.PreferenceManager;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.StringRequest;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -31,15 +37,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import com.example.wcg_viewer.StatisticItems.*;
-
 import static android.content.Context.CONNECTIVITY_SERVICE;
 
-public class DataLab {
+public class SourceDataLab {
     private static final String TAG = "DataLab";
     private final Context mContext;
 
-    public DataLab(Context context) {
+    public SourceDataLab(Context context) {
         mContext = context;
         mNewsItems = loadNewsFromXMLFile();
         mMemberStatistic = loadMemberStatisticFromXMLFile();
@@ -55,7 +59,7 @@ public class DataLab {
             outputStream = new FileOutputStream(file);
             outputStream.write(data);
         } catch (IOException e) {
-            Log.e(TAG, "saveNewsToXMLFile: error " + e.getMessage());
+            Log.e(TAG, "SaveFile: error " + e.getMessage());
             e.printStackTrace();
             return false;
         } finally {
@@ -98,43 +102,34 @@ public class DataLab {
         Log.d(TAG, "getNetworkAvailability: info is null = " + (info == null ? "true" : "false"));
         if (info != null)
             Log.d(TAG, "getNetworkAvailability: info isConnected = " + (info.isConnected() ? "true" : "false"));
-        if (info == null || !info.isConnected()) {
-            return true;
-        } else {
-            return false;
+        return info == null || !info.isConnected();
+    }
+
+    private void skipXMLPart(XmlPullParser parser) throws XmlPullParserException, IOException {
+        Log.d(TAG, "skipXMLPart: skipping");
+        if (parser.getEventType() != XmlPullParser.START_TAG) {
+            throw new IllegalStateException();
+        }
+        // a copy-paste from google's document (the one teaching how to parse xml)
+        int depth = 1;
+        while (depth != 0) {
+            switch (parser.next()) {
+                case XmlPullParser.END_TAG:
+                    depth--;
+                    break;
+                case XmlPullParser.START_TAG:
+                    depth++;
+                    break;
+            }
         }
     }
+
 
     //================================
     /* the news rss feed part */
     private static final String NEWS_FILENAME = "news.xml";
     private List<NewsItem> mNewsItems;
-    private NewsFetched mNewsFetched = new NewsFetched() {
-        @Override
-        public void onNewsFetched(@NonNull NewsRssFeed feed) {
-
-        }
-
-        @Override
-        public void postProgressNotification(int stringID) {
-
-        }
-
-        @Override
-        public void postErrorNotification(String string) {
-
-        }
-
-        @Override
-        public void postErrorNotification(int stringID) {
-
-        }
-
-        @Override
-        public void postCompleteNotification(int stringID) {
-
-        }
-    };
+    private NewsFetched mNewsFetched;
 
     public interface NewsFetched {
         void onNewsFetched(@NonNull NewsRssFeed feed);
@@ -182,7 +177,8 @@ public class DataLab {
 
         } catch (XmlPullParserException | IOException | ParseException e) {
             Log.e(TAG, "XMLtoFeedParser: " + e.getMessage());
-            mNewsFetched.postErrorNotification("ERROR: " + e.getMessage());
+            if (mNewsFetched != null)
+                mNewsFetched.postErrorNotification("ERROR: " + e.getMessage());
             return null;
         }
     }
@@ -265,29 +261,11 @@ public class DataLab {
         return newsItem;
     }
 
-
-    private void skipXMLPart(XmlPullParser parser) throws XmlPullParserException, IOException {
-        if (parser.getEventType() != XmlPullParser.START_TAG) {
-            throw new IllegalStateException();
-        }
-        // a copy-paste from google's document (the one teaching how to parse xml)
-        int depth = 1;
-        while (depth != 0) {
-            switch (parser.next()) {
-                case XmlPullParser.END_TAG:
-                    depth--;
-                    break;
-                case XmlPullParser.START_TAG:
-                    depth++;
-                    break;
-            }
-        }
-    }
-
     public void fetchLatestNews() {
         Log.d(TAG, "fetchLatestNews: begin fetch");
         if (getNetworkAvailability(mContext)) {
-            mNewsFetched.postErrorNotification(mContext.getString(R.string.notify_network_unavailable));
+            if (mNewsFetched != null)
+                mNewsFetched.postErrorNotification(mContext.getString(R.string.notify_network_unavailable));
             return;
         }
         final StringRequest request = new StringRequest(
@@ -308,7 +286,8 @@ public class DataLab {
                                     Date oldDate = XMLStringPubDateConverter(oldDateString);
                                     if (!newDate.after(oldDate)) {
                                         Log.d(TAG, "onResponse: newDate is not after oldDate");
-                                        mNewsFetched.postCompleteNotification(R.string.notify_update_news_already_latest);
+                                        if (mNewsFetched != null)
+                                            mNewsFetched.postCompleteNotification(R.string.notify_update_news_already_latest);
                                         return;
                                     }
                                 } else {
@@ -318,12 +297,16 @@ public class DataLab {
                             } catch (ParseException e) {
                                 e.printStackTrace();
                             }
-                            saveStringToXMLFile(response, NEWS_FILENAME);
+                            File file = new File(mContext.getCacheDir(), NEWS_FILENAME);
+                            SaveFile(file, response.getBytes());
                             setNewsItems(feed.getNewsItems());
-                            mNewsFetched.onNewsFetched(feed);
-                            mNewsFetched.postCompleteNotification(R.string.notify_update_complete);
+                            if (mNewsFetched != null) {
+                                mNewsFetched.onNewsFetched(feed);
+                                mNewsFetched.postCompleteNotification(R.string.notify_update_complete);
+                            }
                         } else {
-                            mNewsFetched.postErrorNotification(R.string.notify_update_news_error);
+                            if (mNewsFetched != null)
+                                mNewsFetched.postErrorNotification(R.string.notify_update_news_error);
                         }
                     }
                 },
@@ -331,7 +314,8 @@ public class DataLab {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         Log.e(TAG, "fetch news error" + error.getMessage());
-                        mNewsFetched.postErrorNotification(mContext.getString(R.string.notify_volley_response_error, error.getLocalizedMessage()));
+                        if (mNewsFetched != null)
+                            mNewsFetched.postErrorNotification(mContext.getString(R.string.notify_volley_response_error, error.getLocalizedMessage()));
                     }
                 });
         SingletonVolley.get(mContext).addRequest(request);
@@ -341,7 +325,6 @@ public class DataLab {
         Log.d(TAG, "loadNewsFromXMLFile: load begin");
         FileInputStream inputStream = null;
         File newsXML = new File(mContext.getCacheDir(), NEWS_FILENAME);
-
 
         if (!newsXML.exists()) {
             Log.e(TAG, "loadNewsFromXMLFile: file not exist");
@@ -378,32 +361,7 @@ public class DataLab {
     private static final String BADGE_ICON_DIR = "/badges";
     private static final String STATISTIC_XML_FILE_NAME = "MemberStatsWithTeamHistory.xml";
     private MemberStatistic mMemberStatistic;
-    private StatisticFetched mStatisticFetched = new StatisticFetched() {
-        @Override
-        public void onMemberStatisticFetched(MemberStatistic statistic) {
-
-        }
-
-        @Override
-        public void postErrorMessage(String message) {
-
-        }
-
-        @Override
-        public void postAlertDialogErrorMessage(String title, String message, String url) {
-
-        }
-
-        @Override
-        public void postProgressMessage(String message) {
-
-        }
-
-        @Override
-        public void postCompleteMessage(String message) {
-
-        }
-    };
+    private StatisticFetched mStatisticFetched;
 
     public void setStatisticFetched(StatisticFetched statisticFetched) {
         mStatisticFetched = statisticFetched;
@@ -414,7 +372,8 @@ public class DataLab {
 
         void postErrorMessage(String message);
 
-        public void postAlertDialogErrorMessage(String title, String message, String url);
+        void postAlertDialogErrorMessage(String title, String message, String url);
+
         void postProgressMessage(String message);
 
         void postCompleteMessage(String message);
@@ -431,9 +390,11 @@ public class DataLab {
 
     public void fetchLatestStatistic(String userName, String verificationCode) {
         Log.d(TAG, "fetchLatestStatistic: begin fetch statistic");
-        mStatisticFetched.postProgressMessage(mContext.getString(R.string.notify_update_in_progress));
+        if (mStatisticFetched != null)
+            mStatisticFetched.postProgressMessage(mContext.getString(R.string.notify_update_in_progress));
         if (getNetworkAvailability(mContext)) {
-            mNewsFetched.postErrorNotification(mContext.getString(R.string.notify_network_unavailable));
+            if (mNewsFetched != null)
+                mNewsFetched.postErrorNotification(mContext.getString(R.string.notify_network_unavailable));
             return;
         }
         StringRequest request = new StringRequest(
@@ -442,26 +403,30 @@ public class DataLab {
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        Log.d(TAG, "onResponse: Recceived statistic XML: " + response);
+                        Log.d(TAG, "onResponse: Received statistic XML: " + response);
                         File file = new File(mContext.getCacheDir(), STATISTIC_XML_FILE_NAME);
                         SaveFile(file, response.getBytes());
-                        setMemberStatistic(ParseXMLtoMemberStatistic(null, response));
-                        mStatisticFetched.onMemberStatisticFetched(mMemberStatistic);
-                        mStatisticFetched.postCompleteMessage(
-                                mContext.getString(
-                                        R.string.notify_update_complete_with_text,
-                                        mContext.getString(R.string.unclassified_text_member_statistic)));
+                        MemberStatistic statistic = ParseXMLtoMemberStatistic(null, response);
+                        setMemberStatistic(statistic);
+                        if (mStatisticFetched != null) {
+                            mStatisticFetched.onMemberStatisticFetched(statistic);
+                            mStatisticFetched.postCompleteMessage(
+                                    mContext.getString(
+                                            R.string.notify_update_complete_with_text,
+                                            mContext.getString(R.string.unclassified_text_member_statistic)));
+                        }
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         Log.e(TAG, "onErrorResponse: update member statistic error" + error.getMessage());
-                        mStatisticFetched.postErrorMessage(
-                                mContext.getString(
-                                        R.string.notify_update_error_with_message,
-                                        mContext.getString(R.string.unclassified_text_member_statistic),
-                                        error.getLocalizedMessage()));
+                        if (mStatisticFetched != null)
+                            mStatisticFetched.postErrorMessage(
+                                    mContext.getString(
+                                            R.string.notify_update_error_with_message,
+                                            mContext.getString(R.string.unclassified_text_member_statistic),
+                                            error.getLocalizedMessage()));
                     }
                 }
         );
@@ -496,11 +461,12 @@ public class DataLab {
         } catch (XmlPullParserException e) {
             e.printStackTrace();
             Log.e(TAG, "ParseXMLtoMemberStatistic: Error: " + e.getMessage());
-            mStatisticFetched.postErrorMessage(
-                    mContext.getString(
-                            R.string.notify_update_error_with_message,
-                            mContext.getString(R.string.unclassified_text_member_statistic),
-                            e.getMessage()));
+            if (mStatisticFetched != null)
+                mStatisticFetched.postErrorMessage(
+                        mContext.getString(
+                                R.string.notify_update_error_with_message,
+                                mContext.getString(R.string.unclassified_text_member_statistic),
+                                e.getMessage()));
             return null;
         }
     }
@@ -513,8 +479,10 @@ public class DataLab {
             MemberStatistic statistic = new MemberStatistic();
 
             if (parser.getName().equals("Error")) {
+                //don'e mind me... the {name} is actually the error message...
                 name = getXMLText(parser);
-                mStatisticFetched.postErrorMessage(mContext.getString(R.string.notify_update_error_with_message, mContext.getString(R.string.unclassified_text_member_statistic), name));
+                if (mStatisticFetched != null)
+                    mStatisticFetched.postErrorMessage(mContext.getString(R.string.notify_update_error_with_message, mContext.getString(R.string.unclassified_text_member_statistic), name));
                 Log.i(TAG, "Decoded an error message: " + name);
                 return null;
             }
@@ -528,50 +496,55 @@ public class DataLab {
 
                 name = parser.getName();
                 if (name.equals("MemberStats")) {
-                    while (parser.next() != XmlPullParser.END_TAG) {
+                    parser.nextTag();
+                    parser.require(XmlPullParser.START_TAG, null, "MemberStat");
+                    while (parser.nextTag() != XmlPullParser.END_TAG) {
                         if (parser.getEventType() != XmlPullParser.START_TAG) {
-                            Log.d(TAG, "actualXMLStatisticParser: in MemberStats  did not got start tag: " + parser.getEventType());
+                            Log.d(TAG, "actualXMLStatisticParser: in MemberStat did not got start tag: " + parser.getEventType());
                             continue;
                         }
 
-                        parser.require(XmlPullParser.START_TAG, null, "MemberStat");
-                        while (parser.next() != XmlPullParser.END_TAG) {
-                            if (parser.getEventType() != XmlPullParser.START_TAG) {
-                                Log.d(TAG, "actualXMLStatisticParser: in MemberStat did not got start tag: " + parser.getEventType());
-                                continue;
-                            }
-
-                            name = parser.getName();
-                            Log.d(TAG, "actualStatisticXMLParser: name=" + name);
-                            if (name.equals("LastResult")) {
+                        name = parser.getName();
+                        Log.d(TAG, "actualStatisticXMLParser: name=" + name);
+                        switch (name) {
+                            case "LastResult":
                                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
-                                statistic.setLastReturnedResult(sdf.parse(getXMLText(parser)));
-                            } else if (name.equals("StatisticsTotals")) {
-                                parseStatisticsTotals(parser, statistic);
-                            } else {
+                                statistic.getMemberStats().setLastReturnedResult(sdf.parse(getXMLText(parser)));
+                                break;
+                            case "StatisticsTotals":
+
+                                parseStatisticsTotals(parser, statistic.getMemberStats());
+                                break;
+                            case "Badges":
+                                statistic.setBadgeList(parseBadges(parser));
+                                break;
+                            default:
                                 Log.d(TAG, "actualXMLStatisticParser: skipping xml part");
                                 skipXMLPart(parser);
-                            }
+                                break;
                         }
-
-
                     }
+                    parser.nextTag();
+                } else if (name.equals("MemberStatsByProjects")) {
+                    statistic.setProjects(parseMemberStatsByProjects(parser));
                 } else {
                     skipXMLPart(parser);
                 }
+                Log.d(TAG, "actualXMLStatisticParser: parsed " + parser.getName());
             }
-            Log.d(TAG, "actualXMLStatisticParser: parse ended: " + parser.getName());
+            Log.d(TAG, "actualStatisticXMLParser: parse ended");
             return statistic;
 
         } catch (IOException | XmlPullParserException | ParseException e) {
             e.printStackTrace();
-            mStatisticFetched.postErrorMessage(mContext.getString(R.string.notify_unknown_load_error_to_visit_website_with_message, mContext.getString(R.string.unclassified_text_member_statistic), e.getLocalizedMessage()));
+            if (mStatisticFetched != null)
+                mStatisticFetched.postErrorMessage(mContext.getString(R.string.notify_unknown_load_error_to_visit_website_with_message, mContext.getString(R.string.unclassified_text_member_statistic), e.getLocalizedMessage()));
             return null;
         }
 
     }
 
-    private void parseStatisticsTotals(XmlPullParser parser, MemberStatistic statistic) throws IOException, XmlPullParserException {
+    private void parseStatisticsTotals(XmlPullParser parser, MemberStatistic.MemberStats stat) throws IOException, XmlPullParserException {
         Log.d(TAG, "parseStatisticsTotals: reading StatisticsTotals");
         parser.require(XmlPullParser.START_TAG, null, "StatisticsTotals");
         String name, text;
@@ -582,32 +555,32 @@ public class DataLab {
             switch (name) {
                 case "RunTime":
                     text = getXMLText(parser);
-                    statistic.setTotalRunTime(text);
+                    stat.setTotalRunTime(text);
                     Log.d(TAG, "parseStatisticsTotals: read total runtime: " + text);
                     break;
                 case "RunTimeRank":
                     text = getXMLText(parser);
-                    statistic.setTotalRunTimeRank(Integer.parseInt(text));
+                    stat.setTotalRunTimeRank(Integer.parseInt(text));
                     Log.d(TAG, "parseStatisticsTotals: RunTimeRank=" + text);
                     break;
                 case "Points":
                     text = getXMLText(parser);
-                    statistic.setGeneratedPoints(Integer.parseInt(text));
+                    stat.setGeneratedPoints(Integer.parseInt(text));
                     Log.d(TAG, "parseStatisticsTotals: Points=" + text);
                     break;
                 case "PointsRank":
                     text = getXMLText(parser);
-                    statistic.setGeneratedPointsRank(Integer.parseInt(text));
+                    stat.setGeneratedPointsRank(Integer.parseInt(text));
                     Log.d(TAG, "parseStatisticsTotals: PointsRank=" + text);
                     break;
                 case "Results":
                     text = getXMLText(parser);
-                    statistic.setReturnedResults(Integer.parseInt(text));
+                    stat.setReturnedResults(Integer.parseInt(text));
                     Log.d(TAG, "parseStatisticsTotals: Results=" + text);
                     break;
                 case "ResultsRank":
                     text = getXMLText(parser);
-                    statistic.setReturnedResultRank(Integer.parseInt(text));
+                    stat.setReturnedResultRank(Integer.parseInt(text));
                     Log.d(TAG, "parseStatisticsTotals: ResultRank=" + text);
                     break;
                 default:
@@ -618,4 +591,163 @@ public class DataLab {
         Log.d(TAG, "parseStatisticsTotals: read finished");
     }
 
+    private List<MemberStatistic.Badge> parseBadges(XmlPullParser parser) throws IOException, XmlPullParserException {
+        Log.d(TAG, "parseBadges: reading Badges");
+        parser.require(XmlPullParser.START_TAG, null, "Badges");
+        String name, text;
+        List<MemberStatistic.Badge> badges = new ArrayList<>();
+        MemberStatistic.Badge badge;
+        while (parser.next() != XmlPullParser.END_TAG) {
+            if (parser.getEventType() != XmlPullParser.START_TAG) continue;
+
+            name = parser.getName();
+            Log.d(TAG, "parseBadges: name=" + name);
+            if ("Badge".equals(name)) {
+                badge = new MemberStatistic.Badge();
+                parser.nextTag();
+                name = parser.getName();
+                Log.d(TAG, "parseBadges: name=" + name);
+                if (parser.getEventType() == XmlPullParser.START_TAG && name.equals("ProjectName")) {
+                    text = getXMLText(parser);
+                    Log.d(TAG, "parseBadges: reading badge project name: " + text);
+                    badge.setProjectName(text);
+                    parser.nextTag();
+                    name = parser.getName();
+                    if (parser.getEventType() == XmlPullParser.START_TAG && name.equals("Resource")) {
+                        //read resource
+                        if (parser.nextTag() == XmlPullParser.START_TAG && (name = parser.getName()).equals("Url")) {
+                            //read badge url
+                            text = getXMLText(parser);
+                            Log.d(TAG, "parseBadges: name=" + name);
+                            Log.d(TAG, "parseBadges: reading badge Url: " + text);
+                            badge.setUrl(text);
+
+                            if (parser.nextTag() == XmlPullParser.START_TAG && (name = parser.getName()).equals("Description")) {
+                                //read description
+                                text = getXMLText(parser);
+                                Log.d(TAG, "parseBadges: name=" + name);
+                                Log.d(TAG, "parseBadges: reading badge Description: " + text);
+                                badge.setDescription(text);
+
+                                // if the code goes here, the badge should be fully and successfully read as expected
+                                Log.d(TAG, "parseBadges: adding a badge");
+                                BadgeIconDownloader(badge.getUrl());
+                                badges.add(badge);
+                                Log.d(TAG, "parseBadges: parserEventType=" + parser.getEventType());
+                            } else {
+                                Log.e(TAG, "parseBadges: expecting description, but not getting one");
+                            }
+                        } else {
+                            Log.e(TAG, "parseBadges: expecting description, but not getting one");
+                        }
+
+                        parser.nextTag();
+                    } else {
+                        Log.e(TAG, "parseBadges: expecting Resource, but not getting one");
+                    }
+                } else {
+                    Log.e(TAG, "parseBadges: expecting projectName, but not getting one");
+                }
+
+                parser.nextTag();
+            } else {
+                skipXMLPart(parser);
+            }
+        }
+        Log.d(TAG, "parseBadges: read finished, returning");
+        return badges;
+    }
+
+    private List<MemberStatistic.Project> parseMemberStatsByProjects(XmlPullParser parser) throws IOException, XmlPullParserException {
+        Log.d(TAG, "parseMemberStatsByProjects: starts reading MemberStatsByProjects");
+        parser.require(XmlPullParser.START_TAG, null, "MemberStatsByProjects");
+        String name, text;
+        List<MemberStatistic.Project> projects = new ArrayList<>();
+        MemberStatistic.Project project;
+        while (parser.next() != XmlPullParser.END_TAG) {
+            if (parser.getEventType() != XmlPullParser.START_TAG) continue;
+            name = parser.getName();
+            if ("Project".equals(name)) {
+                project = new MemberStatistic.Project();
+                Log.d(TAG, "parseMemberStatsByProjects: reading a project");
+                while (parser.next() != XmlPullParser.END_TAG) {
+                    if (parser.getEventType() != XmlPullParser.START_TAG) continue;
+
+                    name = parser.getName();
+                    switch (name) {
+                        case "ProjectName":
+                            text = getXMLText(parser);
+                            project.setProjectName(text);
+                            Log.d(TAG, "parseMemberStatsByProjects: name=" + name + " text=" + text);
+                            break;
+                        case "ProjectShortName":
+                            text = getXMLText(parser);
+                            project.setProjectShortName(text);
+                            Log.d(TAG, "parseMemberStatsByProjects: name=" + name + " text=" + text);
+                            break;
+                        case "RunTime":
+                            text = getXMLText(parser);
+                            project.setRunTimeInSecond(Long.parseLong(text));
+                            Log.d(TAG, "parseMemberStatsByProjects: name=" + name + " text=" + text);
+                            break;
+                        case "Points":
+                            text = getXMLText(parser);
+                            project.setPoints(Long.parseLong(text));
+                            Log.d(TAG, "parseMemberStatsByProjects: name=" + name + " text=" + text);
+                            break;
+                        case "Results":
+                            text = getXMLText(parser);
+                            project.setResults(Long.parseLong(text));
+                            Log.d(TAG, "parseMemberStatsByProjects: name=" + name + " text=" + text);
+                            break;
+                        default:
+                            skipXMLPart(parser);
+                            break;
+                    }
+                }
+                projects.add(project);
+            } else {
+                skipXMLPart(parser);
+            }
+        }
+        return projects;
+    }
+
+    private void BadgeIconDownloader(String url) {
+        Log.d(TAG, "BadgeIconDownloader: downloading a badge: " + url);
+        String[] split = url.split("/");
+        final String fileName = split[split.length - 1];
+        String filePath = mContext.getCacheDir() + BADGE_ICON_DIR;
+        final File badgeIconFile = new File(filePath, fileName);
+
+        File dir = new File(filePath);
+        if (!dir.exists()) {
+            Log.d(TAG, "BadgeIconDownloader: badge dir not exist, creating");
+            boolean createDir = dir.mkdir();
+            Log.d(TAG, "BadgeIconDownloader: create dir returned " + createDir);
+            if (createDir)
+                Log.d(TAG, "BadgeIconDownloader: directory status: isDir=" + dir.isDirectory());
+        }
+
+
+        if (!badgeIconFile.exists()) {
+            ImageRequest request = new ImageRequest(url, new Response.Listener<Bitmap>() {
+                @Override
+                public void onResponse(Bitmap response) {
+                    Log.d(TAG, "onResponse: downloaded a badge: " + fileName);
+                    SingletonLruCache.get(mContext).putBitmapToCache(fileName, response);
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    response.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+                    SaveFile(badgeIconFile, stream.toByteArray());
+                }
+            }, 0, 0, null, null,
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            Log.e(TAG, "onErrorResponse: volley error: " + error.getMessage());
+                        }
+                    });
+            SingletonVolley.get(mContext).addRequest(request);
+        }
+    }
 }

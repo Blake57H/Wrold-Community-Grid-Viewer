@@ -47,14 +47,6 @@ import java.util.Locale;
 import static android.content.Context.CONNECTIVITY_SERVICE;
 
 public class RecentTaskFragment extends Fragment {
-    public static RecentTaskFragment newInstance() {
-
-        Bundle args = new Bundle();
-
-        RecentTaskFragment fragment = new RecentTaskFragment();
-        fragment.setArguments(args);
-        return fragment;
-    }
 
     private static final String TAG = "RecentTaskFragment";
 
@@ -235,12 +227,13 @@ public class RecentTaskFragment extends Fragment {
                                     }
                                     Log.d(TAG, "onResponse: " + getString(R.string.notify_update_progress, downloaded, available));
                                     updateResults(downloaded);
-                                } else if (getView() != null)
+                                } else if (getView() != null) {
                                     Snackbar.make(getView(), R.string.notify_update_complete, Snackbar.LENGTH_SHORT).show();
-                                else {
+                                    loadResults();
+                                } else {
                                     Toast.makeText(getActivity(), R.string.notify_update_complete, Toast.LENGTH_SHORT).show();
+                                    loadResults();
                                 }
-                                loadResults();
                             }
                         }, new Response.ErrorListener() {
                     @Override
