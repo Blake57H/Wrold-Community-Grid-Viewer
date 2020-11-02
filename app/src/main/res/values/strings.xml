@@ -14,9 +14,11 @@
     <string name="menu_tasks">Result Status</string>
     <string name="menu_settings">Settings</string>
     <string name="menu_news">News</string>
+    <string name="menu_projects">Project</string>
 
     <string name="toolbar_update_recent_task_title">Update Recent Tasks</string>
     <string name="toolbar_update_news_title">Get Latest News</string>
+    <string name="toolbar_update_project_title">Update Project Statistics</string>
     <string name="toolbar_update_all_title">Refresh</string>
 
     <string name="notify_update_in_progress">Updating…</string>
@@ -83,5 +85,28 @@
         <item>%d year ago</item>
         <item>%d years ago</item>
     </string-array>
+
+    <string name="projects_runtime_detailed_text">Run Time (y:d:h:m:s): %1$d:%2$d:%3$d:%4$d:%5$d</string>
+    <string name="projects_result_detailed_text">%s Results</string>
+    <string-array name="projects_rumtime_texts">
+        <item>%.2f Year</item>
+        <item>%.2f Years</item>
+        <item>%.2f Day</item>
+        <item>%.2f Days</item>
+        <item>%.2f Hour</item>
+        <item>%.2f Hours</item>
+        <item>%.2f Minute</item>
+        <item>%.2f Minutes</item>
+        <item>%.2f Second</item>
+        <item>%.2f Seconds</item>
+    </string-array>
+    <string-array name="projects_points_texts">
+        <item>%s Points</item>
+        <item>%sK+ Points</item>
+        <item>%sM+ Points</item>
+        <item>%sT+ Points</item>
+        <item>Too Many Points</item>
+    </string-array>
+
 
 </resources>

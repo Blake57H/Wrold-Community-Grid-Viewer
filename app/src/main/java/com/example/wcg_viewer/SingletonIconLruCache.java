@@ -6,21 +6,22 @@ import android.graphics.Bitmap;
 import android.util.Log;
 import android.util.LruCache;
 
-public class SingletonLruCache {
-    private static SingletonLruCache sSingletonLruCache;
+public class SingletonIconLruCache {
+    private static SingletonIconLruCache sSingletonIconLruCache;
     private final LruCache<String, Bitmap> mBitmapLruCache;
     private static final String TAG = "SingletonLruCache";
 
 
-    private SingletonLruCache(Context context) {
+    private SingletonIconLruCache(Context context) {
         ActivityManager am = (ActivityManager) context.getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
         int cacheSize = am.getMemoryClass() * 1024 * 1024 / 8;
         mBitmapLruCache = new LruCache<>(cacheSize);
     }
 
-    public static SingletonLruCache get(Context context) {
-        if (sSingletonLruCache == null) sSingletonLruCache = new SingletonLruCache(context);
-        return sSingletonLruCache;
+    public static SingletonIconLruCache get(Context context) {
+        if (sSingletonIconLruCache == null)
+            sSingletonIconLruCache = new SingletonIconLruCache(context);
+        return sSingletonIconLruCache;
     }
 
     public void putBitmapToCache(String fileName, Bitmap bitmap) {
@@ -30,6 +31,13 @@ public class SingletonLruCache {
 
     public Bitmap getBitmapFromCache(String fileName) {
         Log.d(TAG, "getBitmapFromCache: getting " + fileName);
+        Log.d(TAG, "getBitmapFromCache: return null = " + (mBitmapLruCache.get(fileName) == null));
         return mBitmapLruCache.get(fileName);
+    }
+
+    public Bitmap getBitmapFromCacheWithUrl(String url) {
+        Log.d(TAG, "getBitmapFromCacheWithUrl: get url: " + url);
+        String[] fileName = url.split("/");
+        return getBitmapFromCache(fileName[fileName.length - 1]);
     }
 }

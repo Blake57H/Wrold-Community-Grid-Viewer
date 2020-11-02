@@ -8,7 +8,7 @@ import java.util.List;
 public class MemberStatistic {
     private List<Badge> mBadgeList;
     private MemberStats mMemberStats;
-    private List<Project> mProjects;
+    private List<ProjectItem> mProjects;
 
     public MemberStatistic() {
         mMemberStats = new MemberStats();
@@ -30,11 +30,11 @@ public class MemberStatistic {
         mBadgeList = badgeList;
     }
 
-    public List<Project> getProjects() {
+    public List<ProjectItem> getProjects() {
         return mProjects;
     }
 
-    public void setProjects(List<Project> projects) {
+    public void setProjects(List<ProjectItem> projects) {
         mProjects = projects;
     }
 

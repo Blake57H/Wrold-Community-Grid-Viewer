@@ -15,6 +15,10 @@
             android:id="@+id/navigation_item_news"
             android:icon="@drawable/ic_baseline_mail_24"
             android:title="@string/menu_news" />
+        <item
+            android:id="@+id/navigation_item_projects"
+            android:icon="@drawable/ic_baseline_work_24"
+            android:title="@string/menu_projects" />
     </group>
     <group
         android:id="@+id/drawer_item_none"

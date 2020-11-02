@@ -31,4 +31,12 @@
         android:id="@id/navigation_item_settings"
         android:name="com.example.wcg_viewer.SettingsFragment"
         android:label="@string/menu_settings" />
+    <fragment
+        android:id="@id/navigation_item_projects"
+        android:name="com.example.wcg_viewer.ProjectFragment"
+        android:label="@string/menu_projects" >
+        <action
+            android:id="@+id/action_navigation_item_projects_to_navigation_item_settings"
+            app:destination="@id/navigation_item_settings" />
+    </fragment>
 </navigation>

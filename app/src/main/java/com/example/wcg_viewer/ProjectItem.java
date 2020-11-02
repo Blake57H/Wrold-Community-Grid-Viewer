@@ -33,6 +33,10 @@ public class ProjectItem {
         mRunTimeInSecond = runTimeInSecond;
     }
 
+    public long[] getRunTime(){
+        return RunTimeSecondToRunTimeConverter(mRunTimeInSecond);
+    }
+
     public long getPoints() {
         return mPoints;
     }
@@ -73,7 +77,7 @@ public class ProjectItem {
     }
 
 
-    public long[] RunTimeSecondToRunTimeConverter(long secondsInput) {
+    private long[] RunTimeSecondToRunTimeConverter(long secondsInput) {
         long[] runTime = new long[5];
         /* is this way of parsing too brutal and stupid? Am i supposed to do it in a smarter way? */
         //get second

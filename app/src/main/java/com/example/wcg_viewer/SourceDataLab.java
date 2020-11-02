@@ -5,10 +5,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.provider.ContactsContract;
 import android.util.Log;
 import android.util.Xml;
-import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.preference.PreferenceManager;
@@ -16,13 +14,11 @@ import androidx.preference.PreferenceManager;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.StringRequest;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -41,14 +37,48 @@ import static android.content.Context.CONNECTIVITY_SERVICE;
 
 public class SourceDataLab {
     private static final String TAG = "DataLab";
+    private static final String BADGE_ICON_DIR = BadgeDownloader.BADGE_ICON_DIR;
     private final Context mContext;
 
     public SourceDataLab(Context context) {
         mContext = context;
         mNewsItems = loadNewsFromXMLFile();
         mMemberStatistic = loadMemberStatisticFromXMLFile();
+
+        File dir = new File(context.getCacheDir() + BADGE_ICON_DIR);
+        if (!dir.exists()) {
+            Log.d(TAG, "SourceDataLab: badge dir not exist, creating");
+            boolean createDir = dir.mkdir();
+            Log.d(TAG, "SourceDataLab: create dir returned " + createDir);
+            if (createDir)
+                Log.d(TAG, "SourceDataLab: directory status: isDir=" + dir.isDirectory());
+        }
     }
 
+    //================================
+    /* public methods used in other class */
+    public Bitmap getBadgeIcon(String url) {
+        String fileName = url.split("/")[url.split("/").length];
+        Bitmap icon = SingletonIconLruCache.get(mContext).getBitmapFromCache(fileName);
+        if (icon == null) {
+            File iconFile = new File(mContext.getCacheDir() + BADGE_ICON_DIR, fileName);
+            if (iconFile.exists()) {
+                try {
+                    FileInputStream stream = new FileInputStream(iconFile);
+                    icon = BitmapFactory.decodeStream(stream);
+                    if (stream != null) stream.close();
+                } catch (IOException e) {
+                    Log.e(TAG, "getBadgeIcon: catched error: " + e.getMessage());
+                    e.printStackTrace();
+                    return null;
+                }
+            } else {
+                BadgeDownloader downloader = new BadgeDownloader(mContext);
+                downloader.downloadBadge(url);
+            }
+        }
+        return icon;
+    }
 
     //================================
     /* methods that parts are shard */
@@ -96,7 +126,7 @@ public class SourceDataLab {
         else Log.e(TAG, "saveStringToXMLFile: save file returned error");
     }
 
-    public boolean getNetworkAvailability(Context context) {
+    public static boolean getNetworkAvailability(Context context) {
         ConnectivityManager manager = (ConnectivityManager) context.getSystemService(CONNECTIVITY_SERVICE);
         NetworkInfo info = manager.getActiveNetworkInfo();
         Log.d(TAG, "getNetworkAvailability: info is null = " + (info == null ? "true" : "false"));
@@ -358,7 +388,6 @@ public class SourceDataLab {
 
     //================================
     /* Member Statistic here */
-    private static final String BADGE_ICON_DIR = "/badges";
     private static final String STATISTIC_XML_FILE_NAME = "MemberStatsWithTeamHistory.xml";
     private MemberStatistic mMemberStatistic;
     private StatisticFetched mStatisticFetched;
@@ -526,7 +555,29 @@ public class SourceDataLab {
                     }
                     parser.nextTag();
                 } else if (name.equals("MemberStatsByProjects")) {
-                    statistic.setProjects(parseMemberStatsByProjects(parser));
+                    Log.d(TAG, "actualStatisticXMLParser: parsing MemberStatsByProjects");
+                    // append badge information to project items
+                    // if thing went correctly, the following Log.d() message would show in pairs
+                    List<ProjectItem> items = parseMemberStatsByProjects(parser);
+                    List<MemberStatistic.Badge> badges = statistic.getBadgeList();
+                    int itemChooser = items.size() - 1;
+                    int chooserOldValue = itemChooser ;
+                    for (MemberStatistic.Badge badge : badges) {
+                        Log.d(TAG, "actualStatisticXMLParser: searching " + badge.getProjectName());
+                        do {
+                            ProjectItem item = items.get(itemChooser);
+                            if (badge.getProjectName().equals(item.getProjectName())) {
+                                Log.d(TAG, "actualStatisticXMLParser: found " + item.getProjectName());
+                                item.setBadgeUrl(badge.getUrl());
+                                item.setBadgeDescription(badge.getDescription());
+                                chooserOldValue = itemChooser;
+                            } else {
+                                itemChooser -= 1;
+                                if (itemChooser < 0) itemChooser = items.size() - 1;
+                            }
+                        } while (chooserOldValue != itemChooser);
+                    }
+                    ProjectDataLab.getInstance(mContext).replaceProjectStats(items);
                 } else {
                     skipXMLPart(parser);
                 }
@@ -631,7 +682,8 @@ public class SourceDataLab {
 
                                 // if the code goes here, the badge should be fully and successfully read as expected
                                 Log.d(TAG, "parseBadges: adding a badge");
-                                BadgeIconDownloader(badge.getUrl());
+                                BadgeDownloader badgeDownloader = new BadgeDownloader(mContext);
+                                badgeDownloader.downloadBadge(badge.getUrl());
                                 badges.add(badge);
                                 Log.d(TAG, "parseBadges: parserEventType=" + parser.getEventType());
                             } else {
@@ -658,17 +710,17 @@ public class SourceDataLab {
         return badges;
     }
 
-    private List<MemberStatistic.Project> parseMemberStatsByProjects(XmlPullParser parser) throws IOException, XmlPullParserException {
+    private List<ProjectItem> parseMemberStatsByProjects(XmlPullParser parser) throws IOException, XmlPullParserException {
         Log.d(TAG, "parseMemberStatsByProjects: starts reading MemberStatsByProjects");
         parser.require(XmlPullParser.START_TAG, null, "MemberStatsByProjects");
         String name, text;
-        List<MemberStatistic.Project> projects = new ArrayList<>();
-        MemberStatistic.Project project;
+        List<ProjectItem> projects = new ArrayList<>();
+        ProjectItem project;
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.getEventType() != XmlPullParser.START_TAG) continue;
             name = parser.getName();
             if ("Project".equals(name)) {
-                project = new MemberStatistic.Project();
+                project = new ProjectItem();
                 Log.d(TAG, "parseMemberStatsByProjects: reading a project");
                 while (parser.next() != XmlPullParser.END_TAG) {
                     if (parser.getEventType() != XmlPullParser.START_TAG) continue;
@@ -713,41 +765,4 @@ public class SourceDataLab {
         return projects;
     }
 
-    private void BadgeIconDownloader(String url) {
-        Log.d(TAG, "BadgeIconDownloader: downloading a badge: " + url);
-        String[] split = url.split("/");
-        final String fileName = split[split.length - 1];
-        String filePath = mContext.getCacheDir() + BADGE_ICON_DIR;
-        final File badgeIconFile = new File(filePath, fileName);
-
-        File dir = new File(filePath);
-        if (!dir.exists()) {
-            Log.d(TAG, "BadgeIconDownloader: badge dir not exist, creating");
-            boolean createDir = dir.mkdir();
-            Log.d(TAG, "BadgeIconDownloader: create dir returned " + createDir);
-            if (createDir)
-                Log.d(TAG, "BadgeIconDownloader: directory status: isDir=" + dir.isDirectory());
-        }
-
-
-        if (!badgeIconFile.exists()) {
-            ImageRequest request = new ImageRequest(url, new Response.Listener<Bitmap>() {
-                @Override
-                public void onResponse(Bitmap response) {
-                    Log.d(TAG, "onResponse: downloaded a badge: " + fileName);
-                    SingletonLruCache.get(mContext).putBitmapToCache(fileName, response);
-                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                    response.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-                    SaveFile(badgeIconFile, stream.toByteArray());
-                }
-            }, 0, 0, null, null,
-                    new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            Log.e(TAG, "onErrorResponse: volley error: " + error.getMessage());
-                        }
-                    });
-            SingletonVolley.get(mContext).addRequest(request);
-        }
-    }
 }

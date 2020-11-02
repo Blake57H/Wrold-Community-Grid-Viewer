@@ -16,7 +16,7 @@ import java.text.DateFormat;
 import java.util.Date;
 
 /* I plan to use a json file stored in application data folder to full fill this object */
-/* Update: Seems that SharedPreference is the correct way to save settings. Redoing settings. */
+/* Update: Seems that SharedPreference is the correct way to save settings. This class may remove in the future. */
 public class SettingsDataLab {
     private static SettingsDataLab sLab;
     private static final String SETTINGS_FILENAME = "settings.json";

@@ -36,33 +36,43 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         mUsernameEditText.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
-                if(newValue == null || String.valueOf(newValue).isEmpty())
-                    mUsernameEditText.setSummary(R.string.settings_username_empty_summary);
-                else
-                    mUsernameEditText.setSummary(getString(R.string.settings_username_summary, String.valueOf(newValue)));
+                clearLastUpdateTime();
+                String username = newValue == null ? null : String.valueOf(newValue);
+                setUsernameEditTextSummary(username);
                 return true;
             }
         });
         String username = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(mUsernameEditText.getKey(), null);
+        setUsernameEditTextSummary(username);
+
+        mVerificationCodeEditText = findPreference(getString(R.string.preferences_key_verification_code));
+        mVerificationCodeEditText.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                clearLastUpdateTime();
+                String vc = newValue == null ? null : String.valueOf(newValue);
+                setVerificationCodeEditTextSummary(vc);
+                return true;
+            }
+        });
+        String vc = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(mVerificationCodeEditText.getKey(), null);
+        setVerificationCodeEditTextSummary(vc);
+    }
+
+    private void clearLastUpdateTime(){
+        PreferenceManager.getDefaultSharedPreferences(getActivity()).edit().remove(getString(R.string.preferences_key_last_updated)).apply();
+    }
+
+    private void setUsernameEditTextSummary(String username){
         if (mUsernameEditText != null) {
             if (username != null && !username.isEmpty())
                 mUsernameEditText.setSummary(getString(R.string.settings_username_summary, username));
             else
                 mUsernameEditText.setSummary(R.string.settings_username_empty_summary);
         }
+    }
 
-        mVerificationCodeEditText = findPreference(getString(R.string.preferences_key_verification_code));
-        mVerificationCodeEditText.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                if(newValue == null || String.valueOf(newValue).isEmpty())
-                    mVerificationCodeEditText.setSummary(R.string.settings_verification_code_summary_empty);
-                else
-                    mVerificationCodeEditText.setSummary(R.string.settings_verification_code_summary_set);
-                return true;
-            }
-        });
-        String vc = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(mVerificationCodeEditText.getKey(), null);
+    private void setVerificationCodeEditTextSummary(String vc){
         if (mVerificationCodeEditText != null) {
             if (vc != null && !vc.isEmpty())
                 mVerificationCodeEditText.setSummary(R.string.settings_verification_code_summary_set);
